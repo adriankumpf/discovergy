@@ -22,7 +22,7 @@ defmodule Discovergy.WebsiteAccessCode do
   access code you retrieved). This URL can be used as the src for an iframe in
   order to embed it into an existing web application.
   """
-  @spec website_access_code(Client.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
+  @spec website_access_code(Client.t(), String.t()) :: {:ok, String.t()} | {:error, Error.t()}
   def website_access_code(%Client{} = client, email) do
     with {:ok, code} <- request(client, :get, "/website_access_code", [], query: [email: email]) do
       {:ok, code |> Map.keys() |> List.first()}

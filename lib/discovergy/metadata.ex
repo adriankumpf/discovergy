@@ -7,7 +7,7 @@ defmodule Discovergy.Metadata do
   @doc """
   Returns the devices recognised for the given meter.
   """
-  @spec devices(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, term()}
+  @spec devices(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, Error.t()}
   def devices(%Client{} = client, meter_id) do
     request(client, :get, "/devices", [], query: [meterId: meter_id])
   end
@@ -55,7 +55,7 @@ defmodule Discovergy.Metadata do
   @doc """
   Return all meters that the user has access to.
   """
-  @spec meters(Client.t()) :: {:ok, [Meter.t()]} | {:error, term()}
+  @spec meters(Client.t()) :: {:ok, [Meter.t()]} | {:error, Error.t()}
   def meters(%Client{} = client) do
     with {:ok, meters} <- request(client, :get, "/meters") do
       meters =
@@ -71,7 +71,7 @@ defmodule Discovergy.Metadata do
   @doc """
   Return the available measurement field names for the specified meter.
   """
-  @spec field_names(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, term()}
+  @spec field_names(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, Error.t()}
   def field_names(%Client{} = client, meter_id) do
     request(client, :get, "/field_names", [], query: [meterId: meter_id])
   end

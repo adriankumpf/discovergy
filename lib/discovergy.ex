@@ -6,9 +6,11 @@ defmodule Discovergy do
 
   defmacro __using__(_opts) do
     quote do
-      alias Discovergy.Client
+      alias Discovergy.{Client, Error}
 
-      defp request(%Discovergy.Client{} = client, method, path, body \\ [], opts \\ []) do
+      @spec request(Client.t(), atom(), String.t(), Keyword.t(), Keyword.t()) ::
+              {:ok, any()} | {:error, Error.t()}
+      defp request(%Client{} = client, method, path, body \\ [], opts \\ []) do
         uri = URI.parse(client.base_url <> path)
         query = opts[:query] && URI.encode_query(opts[:query])
         url = URI.to_string(%URI{uri | query: query})
@@ -41,9 +43,18 @@ defmodule Discovergy do
 
       defp handle_response(response) do
         case response do
-          {:ok, %Tesla.Env{status: 200, body: body}} -> {:ok, body}
-          {:ok, %Tesla.Env{} = env} -> raise("unimplemented! #{inspect(env)}}")
-          {:error, reason} -> {:error, reason}
+          {:ok, %Tesla.Env{status: 200, body: body}} ->
+            {:ok, body}
+
+          {:ok, %Tesla.Env{status: status, body: body} = env}
+          when is_binary(body) and body != "" ->
+            {:error, %Error{reason: body, env: env}}
+
+          {:ok, %Tesla.Env{} = env} ->
+            {:error, %Error{reason: :unkown, env: env}}
+
+          {:error, reason} ->
+            {:error, %Error{reason: reason}}
         end
       end
     end

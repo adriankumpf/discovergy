@@ -11,7 +11,7 @@ defmodule Discovergy.OAuth do
   finally obtains an access token.
   """
   @spec login(Client.t(), String.t(), String.t()) ::
-          {:ok, {ConsumerToken.t(), AccessToken.t()}} | {:error, term()}
+          {:ok, {ConsumerToken.t(), AccessToken.t()}} | {:error, Error.t()}
   def login(%Client{} = client, email, password) do
     with {:ok, consumer_token} <- get_consumer_token(client, @client_id),
          {:ok, request_token} <- get_request_token(client, consumer_token),
@@ -29,7 +29,8 @@ defmodule Discovergy.OAuth do
     defstruct [:attributes, :key, :owner, :principal, :secret]
   end
 
-  @spec get_consumer_token(Client.t(), String.t()) :: {:ok, ConsumerToken.t()} | {:error, term()}
+  @spec get_consumer_token(Client.t(), String.t()) ::
+          {:ok, ConsumerToken.t()} | {:error, Error.t()}
   def get_consumer_token(%Client{tesla_client: client}, client_id) do
     response = Tesla.post(client, "/oauth1/consumer_token", client: client_id)
 
@@ -55,7 +56,7 @@ defmodule Discovergy.OAuth do
   end
 
   @spec get_request_token(Client.t(), ConsumerToken.t()) ::
-          {:ok, RequestToken.t()} | {:error, term()}
+          {:ok, RequestToken.t()} | {:error, Error.t()}
   def get_request_token(%Client{} = client, %ConsumerToken{} = consumer_token) do
     client = %Client{client | consumer_token: consumer_token}
 
@@ -79,7 +80,7 @@ defmodule Discovergy.OAuth do
   end
 
   @spec authorize(Client.t(), RequestToken.t(), String.t(), String.t()) ::
-          {:ok, Grant.t()} | {:error, term()}
+          {:ok, Grant.t()} | {:error, Error.t()}
   def authorize(%Client{} = client, %RequestToken{} = request_token, email, password) do
     query = [email: email, password: password, oauth_token: request_token.oauth_token]
     response = Tesla.get(client.tesla_client, "/oauth1/authorize", query: query)
@@ -98,7 +99,7 @@ defmodule Discovergy.OAuth do
   end
 
   @spec get_access_token(Client.t(), ConsumerToken.t(), RequestToken.t(), Grant.t()) ::
-          {:ok, AccessToken.t()} | {:error, term()}
+          {:ok, AccessToken.t()} | {:error, Error.t()}
   def get_access_token(%Client{} = client, consumer_token, request_token, grant) do
     client = %Client{client | consumer_token: consumer_token, access_token: request_token}
     body = [{"oauth_verifier", grant.oauth_verifier}]

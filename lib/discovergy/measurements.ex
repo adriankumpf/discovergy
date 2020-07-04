@@ -7,7 +7,7 @@ defmodule Discovergy.Measurements do
   @typedoc """
   A UNIX millisecond timestamp
   """
-  @type timestamp :: non_neg_integer()
+  @type timestamp :: non_neg_integer
 
   @doc """
   Return the measurements for the specified meter in the specified time interval.
@@ -25,8 +25,8 @@ defmodule Discovergy.Measurements do
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
   """
-  @spec readings(Client.t(), String.t(), timestamp(), timestamp() | nil, Keyword.t()) ::
-          {:ok, [map()]} | {:error, term()}
+  @spec readings(Client.t(), String.t(), timestamp, timestamp | nil, Keyword.t()) ::
+          {:ok, [map()]} | {:error, Error.t()}
   def readings(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters =
       [
@@ -54,7 +54,7 @@ defmodule Discovergy.Measurements do
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
   """
-  @spec last_reading(Client.t(), String.t(), Keyword.t()) :: {:ok, [map()]} | {:error, term()}
+  @spec last_reading(Client.t(), String.t(), Keyword.t()) :: {:ok, [map()]} | {:error, Error.t()}
   def last_reading(%Client{} = client, meter_id, opts \\ []) do
     parameters =
       [
@@ -77,8 +77,8 @@ defmodule Discovergy.Measurements do
     `Discovergy.Metadata.field_names/2` to get all available fields)
 
   """
-  @spec statistics(Client.t(), String.t(), timestamp(), timestamp() | nil, Keyword.t()) ::
-          {:ok, map()} | {:error, term()}
+  @spec statistics(Client.t(), String.t(), timestamp, timestamp | nil, Keyword.t()) ::
+          {:ok, map()} | {:error, Error.t()}
   def statistics(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters =
       [
@@ -102,7 +102,7 @@ defmodule Discovergy.Measurements do
 
   """
   @spec load_profile(Client.t(), String.t(), Date.t(), Date.t(), Keyword.t()) ::
-          {:ok, [map()]} | {:error, term()}
+          {:ok, [map]} | {:error, Error.t()}
   def load_profile(%Client{} = client, meter_id, from, to, opts \\ []) do
     {from_year, from_month, from_day} = Date.to_erl(from)
     {to_year, to_month, to_day} = Date.to_erl(to)
@@ -127,7 +127,8 @@ defmodule Discovergy.Measurements do
   Return the raw, unmodified load profile file as sent by the specified RLM
   meter on the specified date.
   """
-  @spec raw_load_profile(Client.t(), String.t(), Date.t()) :: {:ok, String.t()} | {:error, term()}
+  @spec raw_load_profile(Client.t(), String.t(), Date.t()) ::
+          {:ok, String.t()} | {:error, Error.t()}
   def raw_load_profile(%Client{} = client, meter_id, date) do
     {year, month, day} = Date.to_erl(date)
 
