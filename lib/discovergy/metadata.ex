@@ -1,5 +1,6 @@
 defmodule Discovergy.Metadata do
   @moduledoc """
+  The Metadata endpoint.
   """
 
   use Discovergy
@@ -15,22 +16,22 @@ defmodule Discovergy.Metadata do
   defmodule Meter do
     @moduledoc false
 
-    @type t() :: %__MODULE__{
+    @type t :: %__MODULE__{
             administrationNumber: String.t(),
-            currentScalingFactor: integer(),
-            firstMeasurementTime: integer(),
+            currentScalingFactor: integer,
+            firstMeasurementTime: non_neg_integer,
             fullSerialNumber: String.t(),
-            internalMeters: integer(),
-            lastMeasurementTime: integer(),
+            internalMeters: non_neg_integer,
+            lastMeasurementTime: non_neg_integer,
             loadProfileType: String.t(),
-            location: map(),
+            location: map,
             manufacturerId: String.t(),
             measurementType: String.t(),
             meterId: String.t(),
             scalingFactor: integer(),
             serialNumber: String.t(),
             type: String.t(),
-            voltageScalingFactor: integer()
+            voltageScalingFactor: integer
           }
 
     defstruct [

@@ -1,5 +1,6 @@
 defmodule Discovergy.Disaggregation do
   @moduledoc """
+  The Disaggregation endpoint.
   """
 
   use Discovergy
@@ -28,8 +29,28 @@ defmodule Discovergy.Disaggregation do
   end
 
   @doc """
-  Returns the activities recognised for the given meter during the given
-  interval.
+    Returns the activities recognised for the given meter during the given
+    interval.
+
+    ## Examples
+
+        iex> from = DateTime.utc_now()
+        ...>        |> DateTime.add(-15*60*60)
+        ...>        |> DateTime.to_unix(:millisecond)
+        iex> to = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+        iex> Discovergy.Measurements.activities(client, meter_id, from, to)
+        {:ok, [
+          %{
+           "activityId" => 2575680,
+           "beginTime" => 1593427980000,
+           "deviceId" => 3,
+           "deviceName" => "REFRIGERATOR-3",
+           "deviceType" => "REFRIGERATOR",
+           "endTime" => 1593428634000,
+           "energy" => 666583333
+          },
+          ...
+        ]}
   """
   @spec activities(Client.t(), String.t(), timestamp, timestamp) ::
           {:ok, [map]} | {:error, Error.t()}

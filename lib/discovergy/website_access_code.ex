@@ -1,5 +1,6 @@
 defmodule Discovergy.WebsiteAccessCode do
   @moduledoc """
+  The Webste Access Code endpoint.
   """
 
   use Discovergy

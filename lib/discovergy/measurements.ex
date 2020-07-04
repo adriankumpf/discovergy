@@ -1,5 +1,6 @@
 defmodule Discovergy.Measurements do
   @moduledoc """
+  The Measurements endpoint.
   """
 
   use Discovergy
@@ -53,6 +54,25 @@ defmodule Discovergy.Measurements do
     * `:each"` - Return data from the virtual meter itself (false) or all its
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
+  ## Examples
+
+      iex> Discovergy.Measurements.last_reading(client, meter_id)
+      {:ok,
+       %{
+         "time" => 1593904156020,
+         "values" => %{
+           "energy" => 441576730000,
+           "energyOut" => 2154853000,
+           "power" => 205980,
+           "power1" => 63090,
+           "power2" => 53780,
+           "power3" => 89100,
+           "voltage1" => 234100,
+           "voltage2" => 234000,
+           "voltage3" => 233800
+         }
+       }}
+
   """
   @spec last_reading(Client.t(), String.t(), Keyword.t()) :: {:ok, [map()]} | {:error, Error.t()}
   def last_reading(%Client{} = client, meter_id, opts \\ []) do
@@ -76,6 +96,46 @@ defmodule Discovergy.Measurements do
     * `:fields` - list of measurement fields to return in the result (use
     `Discovergy.Metadata.field_names/2` to get all available fields)
 
+  ## Examples
+
+      iex> from = DateTime.utc_now()
+      ...>        |> DateTime.add(-15*60*60)
+      ...>        |> DateTime.to_unix(:millisecond)
+      iex> Discovergy.Measurements.statistics(client, meter_id, from)
+      {:ok,
+       %{
+         "energy" => %{
+           "count" => 53962,
+           "maximum" => 441687910000,
+           "mean" => 420770138841.7405,
+           "minimum" => 402102161000,
+           "variance" => 1.430940674699829e20
+         },
+         "energyOut" => %{
+           ...
+         },
+         "power" => %{
+           ...
+         },
+         "power1" => %{
+           ...
+         },
+         "power2" => %{
+           ...
+         },
+         "power3" => %{
+           ...
+         },
+         "voltage1" => %{
+           ...
+         },
+         "voltage2" => %{
+           ...
+         },
+         "voltage3" => %{
+           ...
+         }
+       }}
   """
   @spec statistics(Client.t(), String.t(), timestamp, timestamp | nil, Keyword.t()) ::
           {:ok, map()} | {:error, Error.t()}

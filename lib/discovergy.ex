@@ -4,6 +4,8 @@ defmodule Discovergy do
              |> String.split("<!-- MDOC !-->")
              |> Enum.fetch!(1)
 
+  @external_resource "README.md"
+
   defmacro __using__(_opts) do
     quote do
       alias Discovergy.{Client, Error}

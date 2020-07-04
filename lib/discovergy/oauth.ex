@@ -1,5 +1,6 @@
 defmodule Discovergy.OAuth do
   @moduledoc """
+  The OAuth endpoint.
   """
 
   use Discovergy
