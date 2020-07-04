@@ -1,7 +1,8 @@
 defmodule Discovergy do
-  @moduledoc """
-  Documentation for `Discovergy`.
-  """
+  @moduledoc "README.md"
+             |> File.read!()
+             |> String.split("<!-- MDOC !-->")
+             |> Enum.fetch!(1)
 
   defmacro __using__(_opts) do
     quote do

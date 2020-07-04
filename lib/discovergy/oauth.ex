@@ -22,7 +22,10 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule ConsumerToken do
+    @moduledoc false
+
     @opaque t() :: %__MODULE__{}
+
     defstruct [:attributes, :key, :owner, :principal, :secret]
   end
 
@@ -44,13 +47,16 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule RequestToken do
+    @moduledoc false
+
     @opaque t() :: %__MODULE__{}
+
     defstruct [:oauth_callback_confirmed, :oauth_token, :oauth_token_secret]
   end
 
   @spec get_request_token(Client.t(), ConsumerToken.t()) ::
           {:ok, RequestToken.t()} | {:error, term()}
-  defp get_request_token(%Client{} = client, %ConsumerToken{} = consumer_token) do
+  def get_request_token(%Client{} = client, %ConsumerToken{} = consumer_token) do
     client = %Client{client | consumer_token: consumer_token}
 
     with {:ok, body} <- request(client, :post, "/oauth1/request_token") do
@@ -65,13 +71,16 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule Grant do
+    @moduledoc false
+
     @opaque t() :: %__MODULE__{}
+
     defstruct [:oauth_verifier]
   end
 
   @spec authorize(Client.t(), RequestToken.t(), String.t(), String.t()) ::
           {:ok, Grant.t()} | {:error, term()}
-  defp authorize(%Client{} = client, %RequestToken{} = request_token, email, password) do
+  def authorize(%Client{} = client, %RequestToken{} = request_token, email, password) do
     query = [email: email, password: password, oauth_token: request_token.oauth_token]
     response = Tesla.get(client.tesla_client, "/oauth1/authorize", query: query)
 
@@ -81,7 +90,10 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule AccessToken do
+    @moduledoc false
+
     @opaque t() :: %__MODULE__{}
+
     defstruct [:oauth_token, :oauth_token_secret]
   end
 

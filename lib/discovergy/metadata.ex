@@ -13,6 +13,8 @@ defmodule Discovergy.Metadata do
   end
 
   defmodule Meter do
+    @moduledoc false
+
     @type t() :: %__MODULE__{
             administrationNumber: String.t(),
             currentScalingFactor: integer(),
