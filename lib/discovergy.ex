@@ -3,16 +3,26 @@ defmodule Discovergy do
   Documentation for `Discovergy`.
   """
 
-  @doc """
-  Hello world.
+  def request(%Discovergy.Client{} = client, method, path) do
+    url = client.base_url <> path
 
-  ## Examples
+    credentials =
+      OAuther.credentials(
+        consumer_key: client.consumer_token.key,
+        consumer_secret: client.consumer_token.secret,
+        token: client.access_token.oauth_token,
+        token_secret: client.access_token.oauth_token_secret
+      )
 
-      iex> Discovergy.hello()
-      :world
+    {authorization_header, req_params} =
+      OAuther.sign(to_string(method), url, [], credentials)
+      |> OAuther.header()
 
-  """
-  def hello do
-    :world
+    Tesla.request(client.tesla_client,
+      method: method,
+      url: path,
+      headers: [authorization_header],
+      body: req_params
+    )
   end
 end
