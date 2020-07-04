@@ -1,7 +1,8 @@
 defmodule Discovergy.Measurements do
-  use Discovergy
+  @moduledoc """
+  """
 
-  alias Discovergy.Client
+  use Discovergy
 
   @typedoc """
   A UNIX millisecond timestamp
@@ -39,10 +40,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    with {:ok, %Tesla.Env{status: 200, body: measurements}} <-
-           request(client, :get, "/readings", [], query: parameters) do
-      {:ok, measurements}
-    end
+    request(client, :get, "/readings", [], query: parameters)
   end
 
   @doc """
@@ -66,10 +64,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    with {:ok, %Tesla.Env{status: 200, body: measurement}} <-
-           request(client, :get, "/last_reading", [], query: parameters) do
-      {:ok, measurement}
-    end
+    request(client, :get, "/last_reading", [], query: parameters)
   end
 
   @doc """
@@ -94,10 +89,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    with {:ok, %Tesla.Env{status: 200, body: statistics}} <-
-           request(client, :get, "/statistics", [], query: parameters) do
-      {:ok, statistics}
-    end
+    request(client, :get, "/statistics", [], query: parameters)
   end
 
   @doc """
@@ -126,12 +118,9 @@ defmodule Discovergy.Measurements do
         toDay: to_day,
         resolution: opts[:resolution]
       ]
-      |> Enum.reject(fn {_, v} -> is_nil(v) end)
+      |> Enum.reject(&match?({_, nil}, &1))
 
-    with {:ok, %Tesla.Env{status: 200, body: load_profile}} <-
-           request(client, :get, "/load_profile", [], query: parameters) do
-      {:ok, load_profile}
-    end
+    request(client, :get, "/load_profile", [], query: parameters)
   end
 
   @doc """
@@ -149,9 +138,6 @@ defmodule Discovergy.Measurements do
       day: day
     ]
 
-    with {:ok, %Tesla.Env{status: 200, body: load_profile}} <-
-           request(client, :get, "/raw_load_profile", [], query: parameters) do
-      {:ok, load_profile}
-    end
+    request(client, :get, "/raw_load_profile", [], query: parameters)
   end
 end

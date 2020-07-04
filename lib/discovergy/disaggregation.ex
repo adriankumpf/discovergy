@@ -1,7 +1,8 @@
 defmodule Discovergy.Disaggregation do
-  use Discovergy
+  @moduledoc """
+  """
 
-  alias Discovergy.Client
+  use Discovergy
 
   @typedoc """
   A UNIX millisecond timestamp
@@ -21,12 +22,9 @@ defmodule Discovergy.Disaggregation do
         from: from,
         to: to
       ]
-      |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
+      |> Enum.reject(&match?({_, nil}, &1))
 
-    with {:ok, %Tesla.Env{status: 200, body: measurements}} <-
-           request(client, :get, "/disaggregation", [], query: parameters) do
-      {:ok, measurements}
-    end
+    request(client, :get, "/disaggregation", [], query: parameters)
   end
 
   @doc """
@@ -42,11 +40,8 @@ defmodule Discovergy.Disaggregation do
         from: from,
         to: to
       ]
-      |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
+      |> Enum.reject(&match?({_, nil}, &1))
 
-    with {:ok, %Tesla.Env{status: 200, body: measurements}} <-
-           request(client, :get, "/activities", [], query: parameters) do
-      {:ok, measurements}
-    end
+    request(client, :get, "/activities", [], query: parameters)
   end
 end

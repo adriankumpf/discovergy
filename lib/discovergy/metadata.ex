@@ -1,15 +1,15 @@
 defmodule Discovergy.Metadata do
+  @moduledoc """
+  """
+
   use Discovergy
 
   @doc """
   Returns the devices recognised for the given meter.
   """
-  @spec devices(Discovergy.Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, term()}
-  def devices(%Discovergy.Client{} = client, meter_id) do
-    with {:ok, %Tesla.Env{status: 200, body: devices}} <-
-           request(client, :get, "/devices", [], query: [meterId: meter_id]) do
-      {:ok, devices}
-    end
+  @spec devices(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, term()}
+  def devices(%Client{} = client, meter_id) do
+    request(client, :get, "/devices", [], query: [meterId: meter_id])
   end
 
   defmodule Meter do
@@ -53,11 +53,11 @@ defmodule Discovergy.Metadata do
   @doc """
   Return all meters that the user has access to.
   """
-  @spec meters(Discovergy.Client.t()) :: {:ok, [Meter.t()]} | {:error, term()}
-  def meters(%Discovergy.Client{} = client) do
-    with {:ok, %Tesla.Env{status: 200, body: body}} <- request(client, :get, "/meters") do
+  @spec meters(Client.t()) :: {:ok, [Meter.t()]} | {:error, term()}
+  def meters(%Client{} = client) do
+    with {:ok, meters} <- request(client, :get, "/meters") do
       meters =
-        Enum.map(body, fn attrs ->
+        Enum.map(meters, fn attrs ->
           fields = Enum.map(attrs, &key_to_exising_atom/1)
           struct(Meter, fields)
         end)
@@ -69,12 +69,9 @@ defmodule Discovergy.Metadata do
   @doc """
   Return the available measurement field names for the specified meter.
   """
-  @spec field_names(Discovergy.Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, term()}
-  def field_names(%Discovergy.Client{} = client, meter_id) do
-    with {:ok, %Tesla.Env{status: 200, body: field_names}} <-
-           request(client, :get, "/field_names", [], query: [meterId: meter_id]) do
-      {:ok, field_names}
-    end
+  @spec field_names(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, term()}
+  def field_names(%Client{} = client, meter_id) do
+    request(client, :get, "/field_names", [], query: [meterId: meter_id])
   end
 
   defp key_to_exising_atom({key, val}) do

@@ -1,10 +1,17 @@
 defmodule Discovergy.OAuth do
-  @moduledoc false
+  @moduledoc """
+  """
 
-  alias Discovergy.Client
+  use Discovergy
 
   @client_id "DiscoX"
 
+  @doc """
+  Registers the client application, obtains and authorizes a request token and
+  finally obtains an access token.
+  """
+  @spec login(Client.t(), String.t(), String.t()) ::
+          {:ok, {ConsumerToken.t(), AccessToken.t()}} | {:error, term()}
   def login(%Client{} = client, email, password) do
     with {:ok, consumer_token} <- get_consumer_token(client, @client_id),
          {:ok, request_token} <- get_request_token(client, consumer_token),
@@ -15,12 +22,13 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule ConsumerToken do
+    @opaque t() :: %__MODULE__{}
     defstruct [:attributes, :key, :owner, :principal, :secret]
   end
 
-  @consumer_token_endpoint "/oauth1/consumer_token"
-  defp get_consumer_token(%Client{tesla_client: client}, client_id) do
-    response = Tesla.post(client, @consumer_token_endpoint, %{client: client_id})
+  @spec get_consumer_token(Client.t(), String.t()) :: {:ok, ConsumerToken.t()} | {:error, term()}
+  def get_consumer_token(%Client{tesla_client: client}, client_id) do
+    response = Tesla.post(client, "/oauth1/consumer_token", client: client_id)
 
     with {:ok, body} <- handle_response(response) do
       consumer_token = %ConsumerToken{
@@ -36,29 +44,16 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule RequestToken do
+    @opaque t() :: %__MODULE__{}
     defstruct [:oauth_callback_confirmed, :oauth_token, :oauth_token_secret]
   end
 
-  @request_token_endpoint "/oauth1/request_token"
+  @spec get_request_token(Client.t(), ConsumerToken.t()) ::
+          {:ok, RequestToken.t()} | {:error, term()}
   defp get_request_token(%Client{} = client, %ConsumerToken{} = consumer_token) do
-    url = client.base_url <> @request_token_endpoint
+    client = %Client{client | consumer_token: consumer_token}
 
-    credentials =
-      OAuther.credentials(
-        consumer_key: consumer_token.key,
-        consumer_secret: consumer_token.secret
-      )
-
-    {authorization_header, req_params} =
-      OAuther.sign("post", url, [], credentials)
-      |> OAuther.header()
-
-    response =
-      Tesla.post(client.tesla_client, @request_token_endpoint, req_params,
-        headers: [authorization_header]
-      )
-
-    with {:ok, body} <- handle_response(response) do
+    with {:ok, body} <- request(client, :post, "/oauth1/request_token") do
       request_token = %RequestToken{
         oauth_callback_confirmed: body["oauth_callback_confirmed"],
         oauth_token: body["oauth_token"],
@@ -70,45 +65,33 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule Grant do
+    @opaque t() :: %__MODULE__{}
     defstruct [:oauth_verifier]
   end
 
-  @authorize_endpoint "/oauth1/authorize"
+  @spec authorize(Client.t(), RequestToken.t(), String.t(), String.t()) ::
+          {:ok, Grant.t()} | {:error, term()}
   defp authorize(%Client{} = client, %RequestToken{} = request_token, email, password) do
     query = [email: email, password: password, oauth_token: request_token.oauth_token]
+    response = Tesla.get(client.tesla_client, "/oauth1/authorize", query: query)
 
-    with response = Tesla.get(client.tesla_client, @authorize_endpoint, query: query),
-         {:ok, body} <- handle_response(response) do
+    with {:ok, body} <- handle_response(response) do
       {:ok, %Grant{oauth_verifier: body["oauth_verifier"]}}
     end
   end
 
   defmodule AccessToken do
+    @opaque t() :: %__MODULE__{}
     defstruct [:oauth_token, :oauth_token_secret]
   end
 
-  @access_token_endpoint "/oauth1/access_token"
-  def get_access_token(client, consumer_token, request_token, grant) do
-    url = client.base_url <> @access_token_endpoint
+  @spec get_access_token(Client.t(), ConsumerToken.t(), RequestToken.t(), Grant.t()) ::
+          {:ok, AccessToken.t()} | {:error, term()}
+  def get_access_token(%Client{} = client, consumer_token, request_token, grant) do
+    client = %Client{client | consumer_token: consumer_token, access_token: request_token}
+    body = [{"oauth_verifier", grant.oauth_verifier}]
 
-    credentials =
-      OAuther.credentials(
-        consumer_key: consumer_token.key,
-        consumer_secret: consumer_token.secret,
-        token: request_token.oauth_token,
-        token_secret: request_token.oauth_token_secret
-      )
-
-    {authorization_header, req_params} =
-      OAuther.sign("post", url, [{"oauth_verifier", grant.oauth_verifier}], credentials)
-      |> OAuther.header()
-
-    response =
-      Tesla.post(client.tesla_client, @access_token_endpoint, req_params,
-        headers: [authorization_header]
-      )
-
-    with {:ok, body} <- handle_response(response) do
+    with {:ok, body} <- request(client, :post, "/oauth1/access_token", body) do
       access_token = %AccessToken{
         oauth_token: body["oauth_token"],
         oauth_token_secret: body["oauth_token_secret"]
@@ -117,8 +100,4 @@ defmodule Discovergy.OAuth do
       {:ok, access_token}
     end
   end
-
-  defp handle_response({:ok, %Tesla.Env{status: 200, body: body}}), do: {:ok, body}
-  defp handle_response({:ok, %Tesla.Env{} = env}), do: raise("unimplemented! #{inspect(env)}}")
-  defp handle_response({:error, reason}), do: {:error, reason}
 end

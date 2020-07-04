@@ -2,6 +2,8 @@ defmodule Discovergy.Client do
   @moduledoc """
   """
 
+  @opaque t() :: %__MODULE__{}
+
   @enforce_keys [:tesla_client, :base_url, :opts]
   defstruct [:tesla_client, :base_url, :opts, :consumer_token, :access_token]
 
