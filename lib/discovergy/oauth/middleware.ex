@@ -1,4 +1,6 @@
 defmodule Discovergy.OAuth.Middleware do
+  @moduledoc false
+
   @behaviour Tesla.Middleware
 
   @impl Tesla.Middleware
