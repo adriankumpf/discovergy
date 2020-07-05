@@ -10,16 +10,35 @@ defmodule Discovergy do
     quote do
       alias Discovergy.{Client, Error}
 
-      @spec request(Client.t(), atom(), String.t(), Keyword.t(), Keyword.t()) ::
+      @spec get(Client.t(), String.t(), Keyword.t()) :: {:ok, any()} | {:error, Error.t()}
+      defp get(%Client{} = client, path, opts \\ []) do
+        request(client, :get, path, [], opts)
+      end
+
+      @spec post(Client.t(), String.t(), Keyword.t(), Keyword.t()) ::
               {:ok, any()} | {:error, Error.t()}
-      defp request(%Client{} = client, method, path, body \\ [], opts \\ []) do
+      defp post(%Client{} = client, path, body, opts \\ []) do
+        request(client, :post, path, body, opts)
+      end
+
+      defp request(%Client{} = client, method, path, body, opts) do
+        {headers, opts} = Keyword.pop(opts, :headers, [])
+        {query, opts} = Keyword.pop(opts, :query, [])
+
         opts =
           opts
-          |> Keyword.put_new(:consumer, client.consumer_token)
-          |> Keyword.put_new(:token, client.access_token)
+          |> Keyword.put_new(:consumer, client.consumer)
+          |> Keyword.put_new(:token, client.token)
 
         client.tesla_client
-        |> Tesla.request(method: method, url: path, body: body, opts: opts)
+        |> Tesla.request(
+          method: method,
+          url: path,
+          query: query,
+          headers: headers,
+          body: body,
+          opts: opts
+        )
         |> handle_response()
       end
 

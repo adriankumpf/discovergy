@@ -25,7 +25,7 @@ defmodule Discovergy.WebsiteAccessCode do
   """
   @spec website_access_code(Client.t(), String.t()) :: {:ok, String.t()} | {:error, Error.t()}
   def website_access_code(%Client{} = client, email) do
-    with {:ok, code} <- request(client, :get, "/website_access_code", [], query: [email: email]) do
+    with {:ok, code} <- get(client, "/website_access_code", query: [email: email]) do
       {:ok, code |> Map.keys() |> List.first()}
     end
   end

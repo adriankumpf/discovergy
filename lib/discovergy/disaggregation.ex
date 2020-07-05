@@ -25,7 +25,7 @@ defmodule Discovergy.Disaggregation do
       ]
       |> Enum.reject(&match?({_, nil}, &1))
 
-    request(client, :get, "/disaggregation", [], query: parameters)
+    get(client, "/disaggregation", query: parameters)
   end
 
   @doc """
@@ -63,6 +63,6 @@ defmodule Discovergy.Disaggregation do
       ]
       |> Enum.reject(&match?({_, nil}, &1))
 
-    request(client, :get, "/activities", [], query: parameters)
+    get(client, "/activities", query: parameters)
   end
 end

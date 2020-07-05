@@ -41,7 +41,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    request(client, :get, "/readings", [], query: parameters)
+    get(client, "/readings", query: parameters)
   end
 
   @doc """
@@ -84,7 +84,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    request(client, :get, "/last_reading", [], query: parameters)
+    get(client, "/last_reading", query: parameters)
   end
 
   @doc """
@@ -149,7 +149,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    request(client, :get, "/statistics", [], query: parameters)
+    get(client, "/statistics", query: parameters)
   end
 
   @doc """
@@ -180,7 +180,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(&match?({_, nil}, &1))
 
-    request(client, :get, "/load_profile", [], query: parameters)
+    get(client, "/load_profile", query: parameters)
   end
 
   @doc """
@@ -199,6 +199,6 @@ defmodule Discovergy.Measurements do
       day: day
     ]
 
-    request(client, :get, "/raw_load_profile", [], query: parameters)
+    get(client, "/raw_load_profile", query: parameters)
   end
 end

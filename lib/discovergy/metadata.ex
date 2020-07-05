@@ -10,7 +10,7 @@ defmodule Discovergy.Metadata do
   """
   @spec devices(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, Error.t()}
   def devices(%Client{} = client, meter_id) do
-    request(client, :get, "/devices", [], query: [meterId: meter_id])
+    get(client, "/devices", query: [meterId: meter_id])
   end
 
   defmodule Meter do
@@ -58,7 +58,7 @@ defmodule Discovergy.Metadata do
   """
   @spec meters(Client.t()) :: {:ok, [Meter.t()]} | {:error, Error.t()}
   def meters(%Client{} = client) do
-    with {:ok, meters} <- request(client, :get, "/meters") do
+    with {:ok, meters} <- get(client, "/meters") do
       meters =
         Enum.map(meters, fn attrs ->
           fields = Enum.map(attrs, &key_to_exising_atom/1)
@@ -74,7 +74,7 @@ defmodule Discovergy.Metadata do
   """
   @spec field_names(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, Error.t()}
   def field_names(%Client{} = client, meter_id) do
-    request(client, :get, "/field_names", [], query: [meterId: meter_id])
+    get(client, "/field_names", query: [meterId: meter_id])
   end
 
   defp key_to_exising_atom({key, val}) do

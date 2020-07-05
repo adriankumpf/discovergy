@@ -14,7 +14,9 @@ defmodule Discovergy.OAuth.Middleware do
     Tesla.run(env, next)
   end
 
-  defp put_oauth(%Tesla.Env{method: method, url: url, body: body} = env, consumer, token) do
+  defp put_oauth(%Tesla.Env{method: method, body: body} = env, consumer, token) do
+    url = Tesla.build_url(env.url, env.query)
+
     credentials =
       OAuther.credentials(
         consumer_key: consumer.key,
