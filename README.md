@@ -15,21 +15,27 @@ iex> {:ok, client} = Discovergy.Client.new()
 
 iex> Discovergy.Metadata.meters(client)
 {:ok, [%Discovergy.Metadata.Meter{
-  administrationNumber: "DE0000000000000000000000000000000",
-  currentScalingFactor: 1,
-  firstMeasurementTime: 1593580000000,
-  fullSerialNumber: "1A2B3C4D5E6F7G",
-  internalMeters: 1,
-  lastMeasurementTime: 1593901000000,
-  loadProfileType: "SLP",
-  location: %{"city" => "Berlin", "country" => "DE"},
-  manufacturerId: "ESY",
-  measurementType: "ELECTRICITY",
-  meterId: "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
-  scalingFactor: 1,
-  serialNumber: "12345678",
+  administration_number: "",
+  current_scaling_factor: 1,
+  first_measurement_time: 1563286659367,
+  full_serial_number: "1ESY1161229886",
+  internal_meters: 1,
+  last_measurement_time: 1593949473598,
+  load_profile_type: "SLP",
+  location: %{
+   "city" => "Greven",
+   "country" => "DE",
+   "street" => "Sedanstr.",
+   "streetNumber" => "8",
+   "zip" => "48268"
+  },
+  manufacturer_id: "ESY",
+  measurement_type: "ELECTRICITY",
+  meter_id: "c1972a89ce3a4d58aadcb7908a1d31c7",
+  scaling_factor: 1,
+  serial_number: "61229886",
   type: "EASYMETER",
-  voltageScalingFactor: 1
+  voltage_scaling_factor: 1
 }]}
 
 ```

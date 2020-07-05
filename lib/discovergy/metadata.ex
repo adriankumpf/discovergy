@@ -17,39 +17,39 @@ defmodule Discovergy.Metadata do
     @moduledoc false
 
     @type t :: %__MODULE__{
-            administrationNumber: String.t(),
-            currentScalingFactor: integer,
-            firstMeasurementTime: non_neg_integer,
-            fullSerialNumber: String.t(),
-            internalMeters: non_neg_integer,
-            lastMeasurementTime: non_neg_integer,
-            loadProfileType: String.t(),
+            administration_number: String.t(),
+            current_scaling_factor: integer,
+            first_measurement_time: non_neg_integer,
+            full_serial_number: String.t(),
+            internal_meters: non_neg_integer,
+            last_measurement_time: non_neg_integer,
+            load_profile_type: String.t(),
             location: map,
-            manufacturerId: String.t(),
-            measurementType: String.t(),
-            meterId: String.t(),
-            scalingFactor: integer(),
-            serialNumber: String.t(),
+            manufacturer_id: String.t(),
+            measurement_type: String.t(),
+            meter_id: String.t(),
+            scaling_factor: integer(),
+            serial_number: String.t(),
             type: String.t(),
-            voltageScalingFactor: integer
+            voltage_scaling_factor: integer
           }
 
     defstruct [
-      :administrationNumber,
-      :currentScalingFactor,
-      :firstMeasurementTime,
-      :fullSerialNumber,
-      :internalMeters,
-      :lastMeasurementTime,
-      :loadProfileType,
+      :administration_number,
+      :current_scaling_factor,
+      :first_measurement_time,
+      :full_serial_number,
+      :internal_meters,
+      :last_measurement_time,
+      :load_profile_type,
       :location,
-      :manufacturerId,
-      :measurementType,
-      :meterId,
-      :scalingFactor,
-      :serialNumber,
+      :manufacturer_id,
+      :measurement_type,
+      :meter_id,
+      :scaling_factor,
+      :serial_number,
       :type,
-      :voltageScalingFactor
+      :voltage_scaling_factor
     ]
   end
 
@@ -61,7 +61,7 @@ defmodule Discovergy.Metadata do
     with {:ok, meters} <- get(client, "/meters") do
       meters =
         Enum.map(meters, fn attrs ->
-          fields = Enum.map(attrs, &key_to_exising_atom/1)
+          fields = Enum.map(attrs, &camel_cased_key_to_exising_atom/1)
           struct(Meter, fields)
         end)
 
@@ -77,8 +77,10 @@ defmodule Discovergy.Metadata do
     get(client, "/field_names", query: [meterId: meter_id])
   end
 
-  defp key_to_exising_atom({key, val}) do
-    {String.to_existing_atom(key), val}
+  defp camel_cased_key_to_exising_atom({key, val}) do
+    {key
+     |> Macro.underscore()
+     |> String.to_existing_atom(), val}
   rescue
     ArgumentError -> {key, val}
   end
