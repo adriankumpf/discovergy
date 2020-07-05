@@ -5,23 +5,18 @@ defmodule Discovergy.Disaggregation do
 
   use Discovergy
 
-  @typedoc """
-  A UNIX millisecond timestamp
-  """
-  @type timestamp :: non_neg_integer()
-
   @doc """
   Provides the disaggregated energy for the specified meter at 15 minute
   intervals.
   """
-  @spec disaggregation(Client.t(), Meter.id(), timestamp, timestamp | nil) ::
+  @spec disaggregation(Client.t(), Meter.id(), DateTime.t(), DateTime.t()) ::
           {:ok, [map]} | {:error, Error.t()}
   def disaggregation(%Client{} = client, meter_id, from, to \\ nil) do
     parameters =
       [
         meterId: meter_id,
-        from: from,
-        to: to
+        from: DateTime.to_unix(from, :millisecond),
+        to: to && DateTime.to_unix(to, :millisecond)
       ]
       |> Enum.reject(&match?({_, nil}, &1))
 
@@ -34,10 +29,7 @@ defmodule Discovergy.Disaggregation do
 
     ## Examples
 
-        iex> from = DateTime.utc_now()
-        ...>        |> DateTime.add(-15*60*60)
-        ...>        |> DateTime.to_unix(:millisecond)
-        iex> to = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
+        iex> {from, to} = {~U[2019-10-31 19:59:03Z], DateTime.utc_now()}
         iex> Discovergy.Measurements.activities(client, meter_id, from, to)
         {:ok, [
           %{
@@ -52,16 +44,15 @@ defmodule Discovergy.Disaggregation do
           ...
         ]}
   """
-  @spec activities(Client.t(), Meter.id(), timestamp, timestamp) ::
+  @spec activities(Client.t(), Meter.id(), DateTime.t(), DateTime.t()) ::
           {:ok, [map]} | {:error, Error.t()}
   def activities(%Client{} = client, meter_id, from, to) do
     parameters =
       [
         meterId: meter_id,
-        from: from,
-        to: to
+        from: DateTime.to_unix(from, :millisecond),
+        to: DateTime.to_unix(to, :millisecond)
       ]
-      |> Enum.reject(&match?({_, nil}, &1))
 
     get(client, "/activities", query: parameters)
   end

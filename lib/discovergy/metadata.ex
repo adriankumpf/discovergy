@@ -54,6 +54,7 @@ defmodule Discovergy.Metadata do
       :voltage_scaling_factor
     ]
 
+    @doc false
     @spec into(Enumerable.t()) :: t
     def into(attrs) do
       fields = Enum.map(attrs, &camel_cased_key_to_exising_atom/1)

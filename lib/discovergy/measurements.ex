@@ -5,11 +5,6 @@ defmodule Discovergy.Measurements do
 
   use Discovergy
 
-  @typedoc """
-  A UNIX millisecond timestamp
-  """
-  @type timestamp :: non_neg_integer
-
   @doc """
   Return the measurements for the specified meter in the specified time interval.
 
@@ -26,14 +21,14 @@ defmodule Discovergy.Measurements do
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
   """
-  @spec readings(Client.t(), Meter.id(), timestamp, timestamp | nil, Keyword.t()) ::
+  @spec readings(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
           {:ok, [map()]} | {:error, Error.t()}
   def readings(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters =
       [
         meterId: meter_id,
-        from: from,
-        to: to,
+        from: DateTime.to_unix(from, :millisecond),
+        to: to && DateTime.to_unix(to, :millisecond),
         fields: Enum.join(opts[:fields] || [], ","),
         resolution: opts[:resolution],
         disaggregation: opts[:disaggregation],
@@ -98,10 +93,7 @@ defmodule Discovergy.Measurements do
 
   ## Examples
 
-      iex> from = DateTime.utc_now()
-      ...>        |> DateTime.add(-15*60*60)
-      ...>        |> DateTime.to_unix(:millisecond)
-      iex> Discovergy.Measurements.statistics(client, meter_id, from)
+      iex> Discovergy.Measurements.statistics(client, meter_id, ~U[2019-10-31 19:59:03.123Z])
       {:ok,
        %{
          "energy" => %{
@@ -137,14 +129,14 @@ defmodule Discovergy.Measurements do
          }
        }}
   """
-  @spec statistics(Client.t(), Meter.id(), timestamp, timestamp | nil, Keyword.t()) ::
+  @spec statistics(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
           {:ok, map()} | {:error, Error.t()}
   def statistics(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters =
       [
         meterId: meter_id,
-        from: from,
-        to: to,
+        from: DateTime.to_unix(from, :millisecond),
+        to: to && DateTime.to_unix(to, :millisecond),
         fields: Enum.join(opts[:fields] || [], ",")
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
