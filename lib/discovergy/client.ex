@@ -1,6 +1,6 @@
 defmodule Discovergy.Client do
   @moduledoc """
-  A Discovergy API Client.
+  A Discovergy API Client
   """
 
   alias Discovergy.{OAuth, Error}

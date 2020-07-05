@@ -1,6 +1,6 @@
 defmodule Discovergy.Measurements do
   @moduledoc """
-  The Measurements endpoint.
+  The Measurements endpoint
   """
 
   use Discovergy
@@ -11,7 +11,7 @@ defmodule Discovergy.Measurements do
   ## Options
 
     * `:fields` - list of measurement fields to return in the result (use
-    `Discovergy.Metadata.field_names/2` to get all available fields)
+    `Discovergy.Metadata.get_field_names/2` to get all available fields)
     * `:resolution` - time distance between returned readings. Possible values:
     `:raw` (default), `:three_minutes`, `:fifteen_minutes`, `:one_hour`, `:one_day`,
     `:one_week`, `:one_month`, `:one_year`
@@ -22,12 +22,12 @@ defmodule Discovergy.Measurements do
 
   ## Examples
 
-      iex> Discovergy.Measurements.readings(client, meter_id, from, to,
+      iex> Discovergy.Measurements.get_readings(client, meter_id, from, to,
       ...>                                  resolution: :one_month)
       {:ok, [
-       %{
-         "time" => 1563314400000,
-         "values" => %{
+       %Discovergy.Measurement{
+         time: ~U[2019-07-16 22:00:00.000Z],
+         values: %{
            "energy" => 8069238602135,
            "energy1" => 0,
            "energy2" => 0,
@@ -47,9 +47,9 @@ defmodule Discovergy.Measurements do
       ]}
 
   """
-  @spec readings(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
-          {:ok, [map()]} | {:error, Error.t()}
-  def readings(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
+  @spec get_readings(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
+          {:ok, [Measurement.t()]} | {:error, Error.t()}
+  def get_readings(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters =
       [
         meterId: meter_id,
@@ -62,7 +62,9 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    get(client, "/readings", query: parameters)
+    with {:ok, measurements} <- get(client, "/readings", query: parameters) do
+      {:ok, Enum.map(measurements, &Measurement.into/1)}
+    end
   end
 
   @doc """
@@ -71,16 +73,16 @@ defmodule Discovergy.Measurements do
   ## Options
 
     * `:fields` - list of measurement fields to return in the result (use
-    `Discovergy.Metadata.field_names/2` to get all available fields)
+    `Discovergy.Metadata.get_field_names/2` to get all available fields)
     * `:each"` - Return data from the virtual meter itself (false) or all its
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
   ## Examples
 
-      iex> Discovergy.Measurements.last_reading(client, meter_id)
-      {:ok, %{
-        "time" => 1593904156020,
-        "values" => %{
+      iex> Discovergy.Measurements.get_last_reading(client, meter_id)
+      {:ok, %Discovergy.Measurement{
+        time: ~U[2019-07-16 22:00:00.000Z],
+        values: %{
           "energy" => 441576730000,
           "energyOut" => 2154853000,
           "power" => 205980,
@@ -94,8 +96,9 @@ defmodule Discovergy.Measurements do
       }}
 
   """
-  @spec last_reading(Client.t(), Meter.id(), Keyword.t()) :: {:ok, [map()]} | {:error, Error.t()}
-  def last_reading(%Client{} = client, meter_id, opts \\ []) do
+  @spec get_last_reading(Client.t(), Meter.id(), Keyword.t()) ::
+          {:ok, Measurement.t()} | {:error, Error.t()}
+  def get_last_reading(%Client{} = client, meter_id, opts \\ []) do
     parameters =
       [
         meterId: meter_id,
@@ -104,7 +107,9 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    get(client, "/last_reading", query: parameters)
+    with {:ok, measurement} <- get(client, "/last_reading", query: parameters) do
+      {:ok, Measurement.into(measurement)}
+    end
   end
 
   @doc """
@@ -114,11 +119,11 @@ defmodule Discovergy.Measurements do
   ## Options
 
     * `:fields` - list of measurement fields to return in the result (use
-    `Discovergy.Metadata.field_names/2` to get all available fields)
+    `Discovergy.Metadata.get_field_names/2` to get all available fields)
 
   ## Examples
 
-      iex> Discovergy.Measurements.statistics(client, meter_id, from)
+      iex> Discovergy.Measurements.get_statistics(client, meter_id, from)
       {:ok, %{
         "energy" => %{
           "count" => 53962,
@@ -153,9 +158,9 @@ defmodule Discovergy.Measurements do
         }
       }}
   """
-  @spec statistics(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
+  @spec get_statistics(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
           {:ok, map()} | {:error, Error.t()}
-  def statistics(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
+  def get_statistics(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters =
       [
         meterId: meter_id,
@@ -178,7 +183,7 @@ defmodule Discovergy.Measurements do
 
   ## Examples
 
-      iex> Discovergy.Measurements.load_profile(client, meter_id,
+      iex> Discovergy.Measurements.get_load_profile(client, meter_id,
       ...>                                              ~D{2020-07-01},
       ...>                                              ~D{2020-07-01},
       ...>                                              resolution: :one_day)
@@ -200,9 +205,9 @@ defmodule Discovergy.Measurements do
       ]}
 
   """
-  @spec load_profile(Client.t(), Meter.id(), Date.t(), Date.t(), Keyword.t()) ::
+  @spec get_load_profile(Client.t(), Meter.id(), Date.t(), Date.t(), Keyword.t()) ::
           {:ok, [map]} | {:error, Error.t()}
-  def load_profile(%Client{} = client, meter_id, from, to, opts \\ []) do
+  def get_load_profile(%Client{} = client, meter_id, from, to, opts \\ []) do
     {from_year, from_month, from_day} = Date.to_erl(from)
     {to_year, to_month, to_day} = Date.to_erl(to)
 
@@ -229,7 +234,7 @@ defmodule Discovergy.Measurements do
   ## Examples
 
       iex> {:ok, profile} =
-      ...>   Discovergy.Measurements.raw_load_profile(client, meter_id, ~D{2020-07-01})
+      ...>   Discovergy.Measurements.get_raw_load_profile(client, meter_id, ~D{2020-07-01})
       {:ok, <<2, 80, 46, 48, 49, 40, 49, 50, 48, 48, 55, 48, 49, 48, 48, 49,
       53, 48, 48, 41, 40, 48, 48, 48, 48, 48, 48, 48, 48, 41, 40, 49, 53, 41,
       40, 56, 41, 40, 49, 46, 50, 57, 41, 40, 107, 87, 104, 41, ...>>}
@@ -246,9 +251,9 @@ defmodule Discovergy.Measurements do
       ]
 
   """
-  @spec raw_load_profile(Client.t(), Meter.id(), Date.t()) ::
+  @spec get_raw_load_profile(Client.t(), Meter.id(), Date.t()) ::
           {:ok, String.t()} | {:error, Error.t()}
-  def raw_load_profile(%Client{} = client, meter_id, date) do
+  def get_raw_load_profile(%Client{} = client, meter_id, date) do
     {year, month, day} = Date.to_erl(date)
 
     parameters = [

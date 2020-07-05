@@ -9,7 +9,7 @@ defmodule Discovergy.OAuth.Middleware do
 
     env =
       case {opts[:consumer], opts[:token]} do
-        {nil, _} -> env
+        {nil, _token} -> env
         {consumer, token} -> put_oauth(env, consumer, token)
       end
 

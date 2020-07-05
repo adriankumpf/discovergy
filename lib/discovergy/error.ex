@@ -1,6 +1,6 @@
 defmodule Discovergy.Error do
   @moduledoc """
-  A Discovergy Error.
+  A Discovergy Error
   """
 
   @type t :: %__MODULE__{

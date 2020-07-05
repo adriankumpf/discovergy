@@ -13,8 +13,8 @@ iex> {:ok, client} = Discovergy.Client.new()
 ...>                 |> Discovergy.Client.login(email, password)
 {:ok, %Discovergy.Client{}}
 
-iex> Discovergy.Metadata.meters(client)
-{:ok, [%Discovergy.Metadata.Meter{
+iex> Discovergy.Metadata.get_meters(client)
+{:ok, [%Discovergy.Meter{
   administration_number: "",
   current_scaling_factor: 1,
   first_measurement_time: 1563286659367,
@@ -22,12 +22,12 @@ iex> Discovergy.Metadata.meters(client)
   internal_meters: 1,
   last_measurement_time: 1593949473598,
   load_profile_type: "SLP",
-  location: %{
-   "city" => "Greven",
-   "country" => "DE",
-   "street" => "Sedanstr.",
-   "streetNumber" => "8",
-   "zip" => "48268"
+  location: %Discovergy.Location{
+  city: "Greven",
+   country: "DE",
+   street: "Sedanstr.",
+   street_number: "8",
+   zip: "48268"
   },
   manufacturer_id: "ESY",
   measurement_type: "ELECTRICITY",

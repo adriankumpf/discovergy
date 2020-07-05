@@ -1,6 +1,6 @@
 defmodule Discovergy.VirtualMeters do
   @moduledoc """
-  The Virtual Meters endpoint.
+  The Virtual Meters endpoint
   """
 
   use Discovergy
@@ -11,7 +11,7 @@ defmodule Discovergy.VirtualMeters do
   @spec get_virtual_meter(Client.t(), Meter.id()) :: {:ok, [Meter.t()]} | {:error, Error.t()}
   def get_virtual_meter(%Client{} = client, meter_id) do
     with {:ok, meters} <- get(client, "/virtual_meter", query: [meterId: meter_id]) do
-      {:ok, Enum.map(meters, &Discovergy.Metadata.Meter.into/1)}
+      {:ok, Enum.map(meters, &Discovergy.Meter.into/1)}
     end
   end
 
