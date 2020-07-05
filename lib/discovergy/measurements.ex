@@ -26,7 +26,7 @@ defmodule Discovergy.Measurements do
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
   """
-  @spec readings(Client.t(), String.t(), timestamp, timestamp | nil, Keyword.t()) ::
+  @spec readings(Client.t(), Meter.id(), timestamp, timestamp | nil, Keyword.t()) ::
           {:ok, [map()]} | {:error, Error.t()}
   def readings(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters =
@@ -74,7 +74,7 @@ defmodule Discovergy.Measurements do
        }}
 
   """
-  @spec last_reading(Client.t(), String.t(), Keyword.t()) :: {:ok, [map()]} | {:error, Error.t()}
+  @spec last_reading(Client.t(), Meter.id(), Keyword.t()) :: {:ok, [map()]} | {:error, Error.t()}
   def last_reading(%Client{} = client, meter_id, opts \\ []) do
     parameters =
       [
@@ -137,7 +137,7 @@ defmodule Discovergy.Measurements do
          }
        }}
   """
-  @spec statistics(Client.t(), String.t(), timestamp, timestamp | nil, Keyword.t()) ::
+  @spec statistics(Client.t(), Meter.id(), timestamp, timestamp | nil, Keyword.t()) ::
           {:ok, map()} | {:error, Error.t()}
   def statistics(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters =
@@ -161,7 +161,7 @@ defmodule Discovergy.Measurements do
     `:one_month`, `:one_year`
 
   """
-  @spec load_profile(Client.t(), String.t(), Date.t(), Date.t(), Keyword.t()) ::
+  @spec load_profile(Client.t(), Meter.id(), Date.t(), Date.t(), Keyword.t()) ::
           {:ok, [map]} | {:error, Error.t()}
   def load_profile(%Client{} = client, meter_id, from, to, opts \\ []) do
     {from_year, from_month, from_day} = Date.to_erl(from)
@@ -187,7 +187,7 @@ defmodule Discovergy.Measurements do
   Return the raw, unmodified load profile file as sent by the specified RLM
   meter on the specified date.
   """
-  @spec raw_load_profile(Client.t(), String.t(), Date.t()) ::
+  @spec raw_load_profile(Client.t(), Meter.id(), Date.t()) ::
           {:ok, String.t()} | {:error, Error.t()}
   def raw_load_profile(%Client{} = client, meter_id, date) do
     {year, month, day} = Date.to_erl(date)

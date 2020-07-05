@@ -14,7 +14,7 @@ defmodule Discovergy.Disaggregation do
   Provides the disaggregated energy for the specified meter at 15 minute
   intervals.
   """
-  @spec disaggregation(Client.t(), String.t(), timestamp, timestamp | nil) ::
+  @spec disaggregation(Client.t(), Meter.id(), timestamp, timestamp | nil) ::
           {:ok, [map]} | {:error, Error.t()}
   def disaggregation(%Client{} = client, meter_id, from, to \\ nil) do
     parameters =
@@ -52,7 +52,7 @@ defmodule Discovergy.Disaggregation do
           ...
         ]}
   """
-  @spec activities(Client.t(), String.t(), timestamp, timestamp) ::
+  @spec activities(Client.t(), Meter.id(), timestamp, timestamp) ::
           {:ok, [map]} | {:error, Error.t()}
   def activities(%Client{} = client, meter_id, from, to) do
     parameters =

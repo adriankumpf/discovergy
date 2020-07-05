@@ -8,7 +8,7 @@ defmodule Discovergy.Metadata do
   @doc """
   Returns the devices recognised for the given meter.
   """
-  @spec devices(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, Error.t()}
+  @spec devices(Client.t(), Meter.id()) :: {:ok, [String.t()]} | {:error, Error.t()}
   def devices(%Client{} = client, meter_id) do
     get(client, "/devices", query: [meterId: meter_id])
   end
@@ -33,6 +33,8 @@ defmodule Discovergy.Metadata do
             type: String.t(),
             voltage_scaling_factor: integer
           }
+
+    @type id :: String.t()
 
     defstruct [
       :administration_number,
