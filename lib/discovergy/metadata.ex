@@ -53,6 +53,20 @@ defmodule Discovergy.Metadata do
       :type,
       :voltage_scaling_factor
     ]
+
+    @spec into(Enumerable.t()) :: t
+    def into(attrs) do
+      fields = Enum.map(attrs, &camel_cased_key_to_exising_atom/1)
+      struct(__MODULE__, fields)
+    end
+
+    defp camel_cased_key_to_exising_atom({key, val}) do
+      {key
+       |> Macro.underscore()
+       |> String.to_existing_atom(), val}
+    rescue
+      ArgumentError -> {key, val}
+    end
   end
 
   @doc """
@@ -61,29 +75,15 @@ defmodule Discovergy.Metadata do
   @spec meters(Client.t()) :: {:ok, [Meter.t()]} | {:error, Error.t()}
   def meters(%Client{} = client) do
     with {:ok, meters} <- get(client, "/meters") do
-      meters =
-        Enum.map(meters, fn attrs ->
-          fields = Enum.map(attrs, &camel_cased_key_to_exising_atom/1)
-          struct(Meter, fields)
-        end)
-
-      {:ok, meters}
+      {:ok, Enum.map(meters, &Meter.into/1)}
     end
   end
 
   @doc """
   Return the available measurement field names for the specified meter.
   """
-  @spec field_names(Client.t(), String.t()) :: {:ok, [String.t()]} | {:error, Error.t()}
+  @spec field_names(Client.t(), Meter.id()) :: {:ok, [String.t()]} | {:error, Error.t()}
   def field_names(%Client{} = client, meter_id) do
     get(client, "/field_names", query: [meterId: meter_id])
-  end
-
-  defp camel_cased_key_to_exising_atom({key, val}) do
-    {key
-     |> Macro.underscore()
-     |> String.to_existing_atom(), val}
-  rescue
-    ArgumentError -> {key, val}
   end
 end
