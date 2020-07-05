@@ -33,17 +33,25 @@ defmodule Discovergy.Client do
   def new(opts \\ []) do
     base_url = opts[:base_url] || @base_url
     adapter = opts[:adapter] || @adapter
+    consumer_token = opts[:consumer_token]
+    access_token = opts[:access_token]
 
     middlewares = [
       {Tesla.Middleware.BaseUrl, base_url},
       {Tesla.Middleware.Headers, [{"user-agent", ""}]},
+      Discovergy.OAuth.Middleware,
       Tesla.Middleware.FormUrlencoded,
       Tesla.Middleware.JSON
     ]
 
     tesla_client = Tesla.client(middlewares, adapter)
 
-    %__MODULE__{tesla_client: tesla_client, base_url: base_url}
+    %__MODULE__{
+      tesla_client: tesla_client,
+      base_url: base_url,
+      consumer_token: consumer_token,
+      access_token: access_token
+    }
   end
 
   @doc """

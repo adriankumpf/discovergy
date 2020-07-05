@@ -59,9 +59,8 @@ defmodule Discovergy.OAuth do
   @spec get_request_token(Client.t(), ConsumerToken.t()) ::
           {:ok, RequestToken.t()} | {:error, Error.t()}
   def get_request_token(%Client{} = client, %ConsumerToken{} = consumer_token) do
-    client = %Client{client | consumer_token: consumer_token}
-
-    with {:ok, body} <- request(client, :post, "/oauth1/request_token") do
+    with {:ok, body} <-
+           request(client, :post, "/oauth1/request_token", [], consumer: consumer_token) do
       request_token = %RequestToken{
         oauth_callback_confirmed: body["oauth_callback_confirmed"],
         oauth_token: body["oauth_token"],
@@ -102,10 +101,13 @@ defmodule Discovergy.OAuth do
   @spec get_access_token(Client.t(), ConsumerToken.t(), RequestToken.t(), Grant.t()) ::
           {:ok, AccessToken.t()} | {:error, Error.t()}
   def get_access_token(%Client{} = client, consumer_token, request_token, grant) do
-    client = %Client{client | consumer_token: consumer_token, access_token: request_token}
     body = [{"oauth_verifier", grant.oauth_verifier}]
 
-    with {:ok, body} <- request(client, :post, "/oauth1/access_token", body) do
+    with {:ok, body} <-
+           request(client, :post, "/oauth1/access_token", body,
+             consumer: consumer_token,
+             token: request_token
+           ) do
       access_token = %AccessToken{
         oauth_token: body["oauth_token"],
         oauth_token_secret: body["oauth_token_secret"]
