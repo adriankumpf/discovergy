@@ -41,7 +41,7 @@ defmodule Discovergy.Client do
 
     middlewares = [
       {Tesla.Middleware.BaseUrl, base_url},
-      {Tesla.Middleware.Headers, [{"user-agent", ""}]},
+      {Tesla.Middleware.Headers, [{"user-agent", "github.com/adriankumpf/discovergy"}]},
       Discovergy.OAuth.Middleware,
       Tesla.Middleware.FormUrlencoded,
       Tesla.Middleware.JSON
