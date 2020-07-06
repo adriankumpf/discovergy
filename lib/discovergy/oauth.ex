@@ -21,10 +21,9 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule Consumer do
-    @moduledoc false
-
     use Discovergy.Model
 
+    @moduledoc false
     @opaque t() :: %__MODULE__{}
 
     defstruct [:attributes, :key, :owner, :principal, :secret]
@@ -41,10 +40,9 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule RequestToken do
-    @moduledoc false
-
     use Discovergy.Model
 
+    @moduledoc false
     @opaque t() :: %__MODULE__{}
 
     defstruct [:oauth_callback_confirmed, :oauth_token, :oauth_token_secret]
@@ -59,10 +57,9 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule Grant do
-    @moduledoc false
-
     use Discovergy.Model
 
+    @moduledoc false
     @opaque t() :: %__MODULE__{}
 
     defstruct [:oauth_verifier]
@@ -80,10 +77,9 @@ defmodule Discovergy.OAuth do
   end
 
   defmodule AccessToken do
-    @moduledoc false
-
     use Discovergy.Model
 
+    @moduledoc false
     @opaque t() :: %__MODULE__{}
 
     defstruct [:oauth_token, :oauth_token_secret]

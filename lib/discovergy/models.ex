@@ -27,8 +27,6 @@ defmodule Discovergy.Model do
 end
 
 defmodule Discovergy.Meter do
-  @moduledoc false
-
   use Discovergy.Model
 
   @type t :: %__MODULE__{
@@ -82,8 +80,6 @@ defmodule Discovergy.Meter do
 end
 
 defmodule Discovergy.Location do
-  @moduledoc false
-
   use Discovergy.Model
 
   @type t :: %__MODULE__{
@@ -98,8 +94,6 @@ defmodule Discovergy.Location do
 end
 
 defmodule Discovergy.Measurement do
-  @moduledoc false
-
   use Discovergy.Model
 
   @type t :: %__MODULE__{
@@ -116,8 +110,6 @@ defmodule Discovergy.Measurement do
 end
 
 defmodule Discovergy.DisaggregationActivity do
-  @moduledoc false
-
   use Discovergy.Model
 
   @type t :: %__MODULE__{
@@ -154,8 +146,6 @@ defmodule Discovergy.DisaggregationActivity do
 end
 
 defmodule Discovergy.EnergyByDeviceMeasurement do
-  @moduledoc false
-
   use Discovergy.Model
 
   @type t :: %__MODULE__{

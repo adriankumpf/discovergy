@@ -37,7 +37,7 @@ defmodule Discovergy.MixProject do
     end
 
     args = ["Discovergy", @version, Mix.Project.compile_path()]
-    opts = ~w[--main Discovergy --source-ref v#{@version} --source-url #{@url}]
+    opts = ~w[--main Discovergy --source-ref v#{@version} --source-url #{@url} --config .docs.exs]
     System.cmd(ex_doc, args ++ opts)
     Mix.shell().info("Docs built successfully")
   end
