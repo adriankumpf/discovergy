@@ -11,7 +11,7 @@ defmodule Discovergy.Client do
   defstruct [:tesla_client, :base_url, :consumer, :token]
 
   @base_url "https://api.discovergy.com/public/v1"
-  @adapter Tesla.Adapter.Hackney
+  @adapter {Tesla.Adapter.Hackney, pool: :default}
 
   @doc """
   Creates a new Discovergy API client.
