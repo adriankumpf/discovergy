@@ -12,6 +12,6 @@ defmodule Discovergy.Error do
 
   @impl true
   def message(%__MODULE__{reason: reason}) do
-    reason
+    to_string(reason)
   end
 end
