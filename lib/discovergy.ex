@@ -8,8 +8,7 @@ defmodule Discovergy do
 
   defmacro __using__(_opts) do
     quote do
-      alias Discovergy.{Client, Error}
-      alias Discovergy.{Meter, Measurement}
+      alias Discovergy.{Client, Error, Meter}
 
       @spec get(Client.t(), String.t(), Keyword.t()) :: {:ok, any()} | {:error, Error.t()}
       defp get(%Client{} = client, path, opts \\ []) do

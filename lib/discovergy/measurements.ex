@@ -5,6 +5,8 @@ defmodule Discovergy.Measurements do
 
   use Discovergy
 
+  alias Discovergy.Measurement
+
   @doc """
   Return the measurements for the specified meter in the specified time interval.
 

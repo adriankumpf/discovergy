@@ -94,19 +94,7 @@ defmodule Discovergy.Location do
           zip: String.t()
         }
 
-  defstruct [
-    :city,
-    :country,
-    :street,
-    :street_number,
-    :zip
-  ]
-
-  @impl true
-  def into(attrs) do
-    fields = Enum.map(attrs, &camel_cased_key_to_exising_atom/1)
-    struct(__MODULE__, fields)
-  end
+  defstruct [:city, :country, :street, :street_number, :zip]
 end
 
 defmodule Discovergy.Measurement do
