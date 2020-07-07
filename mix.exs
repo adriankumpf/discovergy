@@ -1,6 +1,7 @@
 defmodule Discovergy.MixProject do
   use Mix.Project
 
+  @name "Discovergy"
   @version "0.1.0"
   @url "https://github.com/adriankumpf/discovergy"
 
@@ -10,9 +11,11 @@ defmodule Discovergy.MixProject do
       version: @version,
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
-      description: "A simple wrapper for Discovergy REST API",
+      description: "A simple wrapper for the Discovergy REST API",
+      package: package(),
       aliases: [docs: &build_docs/1],
-      deps: deps()
+      deps: deps(),
+      name: @name
     ]
   end
 
@@ -32,6 +35,13 @@ defmodule Discovergy.MixProject do
     ]
   end
 
+  def package do
+    [
+      licenses: ["MIT"],
+      links: %{"GitHub" => @url}
+    ]
+  end
+
   defp build_docs(_) do
     Mix.Task.run("compile")
     ex_doc = Path.join(Mix.path_for(:escripts), "ex_doc")
@@ -41,7 +51,7 @@ defmodule Discovergy.MixProject do
     end
 
     args = ["Discovergy", @version, Mix.Project.compile_path()]
-    opts = ~w[--main Discovergy --source-ref v#{@version} --source-url #{@url} --config .docs.exs]
+    opts = ~w[--main #{@name} --source-ref v#{@version} --source-url #{@url} --config .docs.exs]
     System.cmd(ex_doc, args ++ opts)
     Mix.shell().info("Docs built successfully")
   end
