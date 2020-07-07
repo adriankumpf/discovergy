@@ -9,6 +9,7 @@ defmodule Discovergy.MixProject do
       app: :discovergy,
       version: @version,
       elixir: "~> 1.10",
+      elixirc_paths: elixirc_paths(Mix.env()),
       description: "A simple wrapper for Discovergy REST API",
       aliases: [docs: &build_docs/1],
       deps: deps()
@@ -18,6 +19,9 @@ defmodule Discovergy.MixProject do
   def application do
     []
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
     [
