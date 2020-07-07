@@ -1,5 +1,10 @@
 defmodule Discovergy.OAuth do
-  @moduledoc false
+  @moduledoc """
+  The OAuth endpoint
+
+  Normally it is not necessary to call the individual authentication steps
+  manually, see `Discovergy.Client.login/3`.
+  """
 
   use Discovergy
 
@@ -23,8 +28,13 @@ defmodule Discovergy.OAuth do
   defmodule Consumer do
     use Discovergy.Model
 
-    @moduledoc false
-    @opaque t() :: %__MODULE__{}
+    @type t() :: %__MODULE__{
+            attributes: map(),
+            key: String.t(),
+            owner: String.t(),
+            principal: String.t(),
+            secret: String.t()
+          }
 
     defstruct [:attributes, :key, :owner, :principal, :secret]
   end
@@ -32,8 +42,10 @@ defmodule Discovergy.OAuth do
   defmodule Token do
     use Discovergy.Model
 
-    @moduledoc false
-    @opaque t() :: %__MODULE__{}
+    @type t() :: %__MODULE__{
+            oauth_token: String.t(),
+            oauth_token_secret: String.t()
+          }
 
     defstruct [:oauth_token, :oauth_token_secret]
   end
@@ -47,6 +59,11 @@ defmodule Discovergy.OAuth do
     defstruct [:oauth_verifier]
   end
 
+  @doc """
+  Authorization step 1
+
+  See the [OAuth 1.0 specification](https://tools.ietf.org/html/rfc5849) for details.
+  """
   @spec register_consumer(Client.t(), String.t()) :: {:ok, Consumer.t()} | {:error, Error.t()}
   def register_consumer(%Client{tesla_client: client}, client_id) do
     response = Tesla.post(client, "/oauth1/consumer_token", client: client_id)
@@ -56,6 +73,11 @@ defmodule Discovergy.OAuth do
     end
   end
 
+  @doc """
+  Authorization step 2
+
+  See the [OAuth 1.0 specification](https://tools.ietf.org/html/rfc5849) for details.
+  """
   @spec get_request_token(Client.t(), Consumer.t()) :: {:ok, Token.t()} | {:error, Error.t()}
   def get_request_token(%Client{} = client, %Consumer{} = consumer) do
     with {:ok, request_token} <- post(client, "/oauth1/request_token", [], consumer: consumer) do
@@ -63,6 +85,11 @@ defmodule Discovergy.OAuth do
     end
   end
 
+  @doc """
+  Authorization step 3
+
+  See the [OAuth 1.0 specification](https://tools.ietf.org/html/rfc5849) for details.
+  """
   @spec authorize(Client.t(), Token.t(), String.t(), String.t()) ::
           {:ok, Grant.t()} | {:error, Error.t()}
   def authorize(%Client{} = client, %Token{} = request_token, email, password) do
@@ -74,6 +101,11 @@ defmodule Discovergy.OAuth do
     end
   end
 
+  @doc """
+  Authorization step 4
+
+  See the [OAuth 1.0 specification](https://tools.ietf.org/html/rfc5849) for details.
+  """
   @spec get_access_token(Client.t(), Consumer.t(), Token.t(), Grant.t()) ::
           {:ok, Token.t()} | {:error, Error.t()}
   def get_access_token(%Client{} = client, consumer, request_token, grant) do

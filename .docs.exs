@@ -5,14 +5,17 @@
       Discovergy.Measurements,
       Discovergy.Metadata,
       Discovergy.VirtualMeters,
-      Discovergy.WebsiteAccessCode
+      Discovergy.WebsiteAccessCode,
+      Discovergy.OAuth
     ],
     Models: [
       Discovergy.Measurement,
       Discovergy.Meter,
       Discovergy.Location,
       Discovergy.DisaggregationActivity,
-      Discovergy.EnergyByDeviceMeasurement
+      Discovergy.EnergyByDeviceMeasurement,
+      Discovergy.OAuth.Consumer,
+      Discovergy.OAuth.Token
     ]
   ]
 ]
