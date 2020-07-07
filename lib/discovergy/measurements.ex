@@ -19,7 +19,7 @@ defmodule Discovergy.Measurements do
     `:one_week`, `:one_month`, `:one_year`
     * `: disaggregation ` - Include load disaggregation as pseudo-measurement
     fields, if available. Only applies if raw resolution is selected
-    * `:each"` - Return data from the virtual meter itself (false) or all its
+    * `:each` - Return data from the virtual meter itself (false) or all its
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
   ## Examples
@@ -76,7 +76,7 @@ defmodule Discovergy.Measurements do
 
     * `:fields` - list of measurement fields to return in the result (use
     `Discovergy.Metadata.get_field_names/2` to get all available fields)
-    * `:each"` - Return data from the virtual meter itself (false) or all its
+    * `:each` - Return data from the virtual meter itself (false) or all its
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
   ## Examples

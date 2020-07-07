@@ -20,7 +20,7 @@ defmodule Discovergy.Client do
 
     * `:consumer` - a custom consumer token (see
     `Discovergy.OAuth.Consumer `)
-    * `:token` - a custom access token (see `Discovergy.OAuth.AccessToken `)
+    * `:token` - a custom access token (see `Discovergy.OAuth.Token `)
     * `:base_url` - the base URL for all endpoints (default:
     `https://api.discovergy.com/public/v1`)
     * `:adapter` - the [Tesla](https://hexdocs.pm/tesla/readme.html) adapter

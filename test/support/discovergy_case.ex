@@ -17,7 +17,7 @@ defmodule Discovergy.Case do
           secret: "$secret"
         }
 
-        token = %Discovergy.OAuth.AccessToken{
+        token = %Discovergy.OAuth.Token{
           oauth_token: "$access_token",
           oauth_token_secret: "$access_token_secret"
         }

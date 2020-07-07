@@ -15,7 +15,7 @@ defmodule Discovergy.OAuthTest do
              secret: "$secret"
            } == consumer
 
-    assert %Discovergy.OAuth.AccessToken{
+    assert %Discovergy.OAuth.Token{
              oauth_token: "$access_token",
              oauth_token_secret: "$access_token_secret"
            } == token
