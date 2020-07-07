@@ -17,7 +17,7 @@ iex> {:ok, client} = Discovergy.Client.new() |> Discovergy.Client.login(email, p
 {:ok, %Discovergy.Client{}}
 ```
 
-Then pass the client the respective endpoint function. For example, to list all meters that the user has access to:
+Then pass the `client` to the respective endpoint function. For example, to list all meters the user has access to:
 
 ```elixir
 iex> Discovergy.Metadata.get_meters(client)
@@ -46,10 +46,10 @@ iex> Discovergy.Metadata.get_meters(client)
 }]}
 ```
 
-Or to get the last measurement for a specific meter:
+Or to obtain the last measurement of a particular meter:
 
 ```elixir
-iex> Discovergy.Measurements.get_last_reading(client, meter_id)
+iex> Discovergy.Measurements.get_last_reading(client, "c1972a89ce3a4d58aadcb7908a1d31c7")
 {:ok, %Discovergy.Measurement{
   time: ~U[2019-07-16 22:00:00.000Z],
   values: %{
