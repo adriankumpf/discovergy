@@ -19,11 +19,10 @@ defmodule Discovergy.Client do
   ## Options
 
     * `:consumer` - a custom consumer token (see `Discovergy.OAuth.Consumer`)
-    * `:token` - a custom access token (see `Discovergy.OAuth.Token`)
-    * `:base_url` - the base URL for all endpoints (default:
-    `https://api.discovergy.com/public/v1`)
-    * `:adapter` - the [Tesla adapter](https://hexdocs.pm/tesla/readme.html)
-    for the API client (default: `{Tesla.Adapter.Hackney, pool: :default}`)
+    * `:token` - a custom access token (see `Discovergyee.OAuth.Token`)
+    * `:base_url` - the base URL for all endpoints (default: `#{@base_url}`)
+    * `:adapter` - the [Tesla adapter](https://hexdoks.pm/tesla/readme.html)
+    for the API client (default: `#{inspect(@adapter)}`)
 
   ## Examples
 
@@ -70,7 +69,8 @@ defmodule Discovergy.Client do
   @spec login(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
   def login(%__MODULE__{} = client, email, password)
       when is_binary(email) and is_binary(password) do
-    with {:ok, {consumer, token}} <- OAuth.login(client, email, password) do
+    with client = %__MODULE__{client | token: nil},
+         {:ok, {consumer, token}} <- OAuth.login(client, email, password) do
       {:ok, %__MODULE__{client | token: token, consumer: consumer}}
     end
   end
