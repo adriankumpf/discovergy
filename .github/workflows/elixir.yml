@@ -12,13 +12,13 @@ jobs:
    runs-on: ubuntu-18.04
    steps:
      - uses: actions/checkout@v2
-     - uses: actions/cache@v1
+     - uses: actions/cache@v2
        with:
          path: deps
          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
          restore-keys: |
            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-
-     - uses: actions/cache@v1
+     - uses: actions/cache@v2
        with:
          path: _build
          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
