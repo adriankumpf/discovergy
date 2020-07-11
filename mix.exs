@@ -2,7 +2,7 @@ defmodule Discovergy.MixProject do
   use Mix.Project
 
   @name "Discovergy"
-  @version "0.2.0"
+  @version "0.3.0"
   @url "https://github.com/adriankumpf/discovergy"
 
   def project do
