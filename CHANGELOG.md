@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.0 (2020-07-13)
+
+- Make `hackney` an optional dependency
+
 ## v0.3.0 (2020-07-11)
 
 - Reuse consumer when logging in

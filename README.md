@@ -75,7 +75,7 @@ Add `discovergy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:discovergy, "~> 0.3.0"},
+    {:discovergy, "~> 0.4"},
     {:hackney, "~> 1.15"}
   ]
 end
