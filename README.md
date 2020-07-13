@@ -75,9 +75,12 @@ Add `discovergy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:discovergy, "~> 0.3.0"}
+    {:discovergy, "~> 0.3.0"},
+    {:hackney, "~> 1.15"}
   ]
 end
 ```
+
+By default, `discovergy` uses [hackney](https://github.com/benoitc/hackney) (via `Tesla.Adapter.Hackney`). Add `hackney` to the list of dependencies too if you don't want to use another HTTP adapter (see [Tesla Adapters](https://github.com/teamon/tesla#adapters) to find all available adapters and [`Discovergy.Client.new/1`](https://hexdocs.pm/discovergy/Discovergy.Client.html#new/1) on how to configure another adapter).
 
 The docs can be found at [hexdocs.pm/discovergy](https://hexdocs.pm/discovergy).

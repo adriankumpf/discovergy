@@ -30,7 +30,7 @@ defmodule Discovergy.MixProject do
     [
       {:oauther, "~> 1.1"},
       {:tesla, "~> 1.3"},
-      {:hackney, "~> 1.15"},
+      {:hackney, "~> 1.15", optional: true},
       {:jason, "~> 1.2"}
     ]
   end
