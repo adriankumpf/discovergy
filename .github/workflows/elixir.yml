@@ -24,7 +24,7 @@ jobs:
          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
          restore-keys: |
            ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-
-     - uses: actions/setup-elixir@v1
+     - uses: actions/setup-elixir@v1.5
        with:
          otp-version: ${{ matrix.otp }}
          elixir-version: ${{ matrix.elixir }}
