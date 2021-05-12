@@ -1,34 +1,42 @@
 name: CI
 on: [pull_request, push]
 jobs:
- mix_test:
-   name: mix test (Elixir ${{ matrix.elixir }} OTP ${{ matrix.otp }})
-   strategy:
-     matrix:
-       elixir: ['1.10.4']
-       include:
-         - elixir: '1.10.4'
-           otp: '23.x'
-   runs-on: ubuntu-18.04
-   steps:
-     - uses: actions/checkout@v2.3.4
-     - uses: actions/cache@v2.1.5
-       with:
-         path: deps
-         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-         restore-keys: |
-           ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-
-     - uses: actions/cache@v2.1.5
-       with:
-         path: _build
-         key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-build-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
-         restore-keys: |
-           ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-
-     - uses: actions/setup-elixir@v1
-       with:
-         otp-version: ${{ matrix.otp }}
-         elixir-version: ${{ matrix.elixir }}
-     - name: Install Dependencies
-       run: mix deps.get
-     - name: Run Tests
-       run: mix test
+  mix_test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pair:
+              elixir: "1.10.4"
+              otp: "23.x"
+          - pair:
+              elixir: "1.11.4"
+              otp: "23.x"
+            lint: lint
+
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: deps
+          key: deps-${{ hashFiles('**/mix.lock') }}
+          restore-keys: deps-
+      - uses: actions/cache@v2
+        with:
+          path: _build
+          key: build-${{ runner.os }}-${{ matrix.pair.otp }}-${{ matrix.pair.elixir }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: build-${{ runner.os }}-${{ matrix.pair.otp }}-${{ matrix.pair.elixir }}-
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.pair.otp}}
+          elixir-version: ${{matrix.pair.elixir}}
+      - name: Install Dependencies
+        run: mix deps.get
+      - run: mix deps.unlock --check-unused
+        if: ${{ matrix.lint }}
+      - run: mix deps.compile
+      - run: mix compile --warnings-as-errors
+        if: ${{ matrix.lint }}
+      - name: Run Tests
+        run: mix test
