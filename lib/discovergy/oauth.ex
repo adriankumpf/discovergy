@@ -65,10 +65,6 @@ defmodule Discovergy.OAuth do
   See the [OAuth 1.0 specification](https://tools.ietf.org/html/rfc5849) for details.
   """
   @spec register_consumer(Client.t(), String.t()) :: {:ok, Consumer.t()} | {:error, Error.t()}
-  def register_consumer(%Client{consumer: %Consumer{owner: client_id} = consumer}, client_id) do
-    {:ok, consumer}
-  end
-
   def register_consumer(%Client{tesla_client: client}, client_id) do
     response = Tesla.post(client, "/oauth1/consumer_token", client: client_id)
 
