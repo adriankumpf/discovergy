@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0 (2021-10-27)
+
+- Do not reuse consumer token when logging in
+
 ## v0.4.0 (2020-07-13)
 
 - Make `hackney` an optional dependency
