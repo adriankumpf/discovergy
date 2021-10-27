@@ -8,10 +8,10 @@ jobs:
         include:
           - pair:
               elixir: "1.10.4"
-              otp: "23.x"
+              otp: "23"
           - pair:
-              elixir: "1.11.4"
-              otp: "23.x"
+              elixir: "1.12.3"
+              otp: "24"
             lint: lint
 
     runs-on: ubuntu-18.04
