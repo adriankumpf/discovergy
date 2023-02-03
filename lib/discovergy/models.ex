@@ -9,13 +9,13 @@ defmodule Discovergy.Model do
 
       @impl true
       def into(attrs) do
-        fields = Enum.map(attrs, &camel_cased_key_to_exising_atom/1)
+        fields = Enum.map(attrs, &camel_cased_key_to_existing_atom/1)
         struct(__MODULE__, fields)
       end
 
       defoverridable into: 1
 
-      defp camel_cased_key_to_exising_atom({key, val}) do
+      defp camel_cased_key_to_existing_atom({key, val}) do
         {key
          |> Macro.underscore()
          |> String.to_existing_atom(), val}
@@ -72,7 +72,7 @@ defmodule Discovergy.Meter do
     fields =
       Enum.map(attrs, fn
         {"location", location} -> {:location, Discovergy.Location.into(location)}
-        {key, value} -> camel_cased_key_to_exising_atom({key, value})
+        {key, value} -> camel_cased_key_to_existing_atom({key, value})
       end)
 
     struct(__MODULE__, fields)
@@ -138,7 +138,7 @@ defmodule Discovergy.DisaggregationActivity do
       Enum.map(attrs, fn
         {"beginTime", time} -> {:begin_time, DateTime.from_unix!(time, :millisecond)}
         {"endTime", time} -> {:end_time, DateTime.from_unix!(time, :millisecond)}
-        {key, value} -> camel_cased_key_to_exising_atom({key, value})
+        {key, value} -> camel_cased_key_to_existing_atom({key, value})
       end)
 
     struct(__MODULE__, fields)

@@ -21,7 +21,7 @@ defmodule Discovergy.OAuthTest do
            } == token
   end
 
-  test "does not resuse the consumer" do
+  test "does not reuse the consumer" do
     mock(&full_authorization/1)
 
     consumer = %Discovergy.OAuth.Consumer{

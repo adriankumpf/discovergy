@@ -52,7 +52,7 @@ defmodule Discovergy do
             {:error, %Error{reason: body, env: env}}
 
           {:ok, %Tesla.Env{} = env} ->
-            {:error, %Error{reason: :unkown, env: env}}
+            {:error, %Error{reason: :unknown, env: env}}
 
           {:error, reason} ->
             {:error, %Error{reason: reason}}
