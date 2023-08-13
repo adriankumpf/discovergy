@@ -5,12 +5,12 @@ defmodule Discovergy.ErrorTest do
     error_msg = "400 Bad Request: The meter $meter_id is not a virtual meter"
 
     mock(fn %{url: "https://api.discovergy.com/public/v1/virtual_meter"} ->
-      text(error_msg, status: 400)
+      {:ok, 400, [], error_msg}
     end)
 
     assert {:error, error} = Discovergy.VirtualMeters.get_virtual_meter(client, "$meter_id")
 
-    assert %Discovergy.Error{env: %Tesla.Env{body: ^error_msg, status: 400}, reason: ^error_msg} =
+    assert %Discovergy.Error{reason: ^error_msg, response: {400, [], ^error_msg}} =
              error
 
     assert Exception.message(error) == error_msg

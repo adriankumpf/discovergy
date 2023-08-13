@@ -3,8 +3,7 @@ defmodule Discovergy.Measurements do
   The Measurements endpoint
   """
 
-  use Discovergy
-
+  alias Discovergy.Client
   alias Discovergy.Measurement
 
   @doc """
@@ -64,7 +63,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    with {:ok, measurements} <- get(client, "/readings", query: parameters) do
+    with {:ok, measurements} <- Client.get(client, "/readings", query: parameters) do
       {:ok, Enum.map(measurements, &Measurement.into/1)}
     end
   end
@@ -109,7 +108,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    with {:ok, measurement} <- get(client, "/last_reading", query: parameters) do
+    with {:ok, measurement} <- Client.get(client, "/last_reading", query: parameters) do
       {:ok, Measurement.into(measurement)}
     end
   end
@@ -172,7 +171,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
 
-    get(client, "/statistics", query: parameters)
+    Client.get(client, "/statistics", query: parameters)
   end
 
   @doc """
@@ -226,7 +225,7 @@ defmodule Discovergy.Measurements do
       ]
       |> Enum.reject(&match?({_, nil}, &1))
 
-    get(client, "/load_profile", query: parameters)
+    Client.get(client, "/load_profile", query: parameters)
   end
 
   @doc """
@@ -260,6 +259,6 @@ defmodule Discovergy.Measurements do
       day: day
     ]
 
-    get(client, "/raw_load_profile", query: parameters)
+    Client.get(client, "/raw_load_profile", query: parameters)
   end
 end

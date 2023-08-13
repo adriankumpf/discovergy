@@ -1,9 +1,8 @@
 defmodule Discovergy.MixProject do
   use Mix.Project
 
-  @name "Discovergy"
   @version "0.5.0"
-  @url "https://github.com/adriankumpf/discovergy"
+  @source_url "https://github.com/adriankumpf/discovergy"
 
   def project do
     [
@@ -13,14 +12,14 @@ defmodule Discovergy.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       description: "A simple wrapper for the Discovergy REST API",
       package: package(),
-      aliases: [docs: &build_docs/1],
+      docs: docs(),
       deps: deps(),
-      name: @name
+      xref: [exclude: [Finch]]
     ]
   end
 
   def application do
-    []
+    [mod: {Discovergy.Application, []}]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
@@ -29,30 +28,45 @@ defmodule Discovergy.MixProject do
   defp deps do
     [
       {:oauther, "~> 1.1"},
-      {:tesla, "~> 1.3"},
-      {:hackney, "~> 1.15", optional: true},
-      {:jason, "~> 1.2"}
+      {:jason, "~> 1.2"},
+      {:finch, "~> 0.16", optional: true},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false}
     ]
   end
 
   def package do
     [
       licenses: ["MIT"],
-      links: %{"GitHub" => @url}
+      maintainers: ["Adrian Kumpf"],
+      links: %{"GitHub" => @source_url, "Changelog" => "#{@source_url}/blob/master/CHANGELOG.md"},
+      files: ~w(lib mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
-  defp build_docs(_) do
-    Mix.Task.run("compile")
-    ex_doc = Path.join(Mix.path_for(:escripts), "ex_doc")
-
-    unless File.exists?(ex_doc) do
-      raise "cannot build docs because escript for ex_doc is not installed"
-    end
-
-    args = ["Discovergy", @version, Mix.Project.compile_path()]
-    opts = ~w[--main #{@name} --source-ref v#{@version} --source-url #{@url} --config .docs.exs]
-    System.cmd(ex_doc, args ++ opts)
-    Mix.shell().info("Docs built successfully")
+  defp docs do
+    [
+      extras: ~w(CHANGELOG.md README.md),
+      source_ref: "#{@version}",
+      source_url: @source_url,
+      main: "readme",
+      groups_for_modules: [
+        "HTTP Client": ~r/HTTPClient/,
+        Endpoints: [
+          Discovergy.Disaggregation,
+          Discovergy.Measurements,
+          Discovergy.Metadata,
+          Discovergy.VirtualMeters,
+          Discovergy.WebsiteAccessCode
+        ],
+        Models: [
+          Discovergy.Measurement,
+          Discovergy.Meter,
+          Discovergy.Location,
+          Discovergy.DisaggregationActivity,
+          Discovergy.EnergyByDeviceMeasurement
+        ]
+      ],
+      skip_undefined_reference_warnings_on: ~w(CHANGELOG.md README.md)
+    ]
   end
 end

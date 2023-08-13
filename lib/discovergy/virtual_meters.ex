@@ -3,14 +3,14 @@ defmodule Discovergy.VirtualMeters do
   The Virtual Meters endpoint
   """
 
-  use Discovergy
+  alias Discovergy.Client
 
   @doc """
   Return the individual meters comprising the specified virtual meter.
   """
   @spec get_virtual_meter(Client.t(), Meter.id()) :: {:ok, [Meter.t()]} | {:error, Error.t()}
   def get_virtual_meter(%Client{} = client, meter_id) do
-    with {:ok, meters} <- get(client, "/virtual_meter", query: [meterId: meter_id]) do
+    with {:ok, meters} <- Client.get(client, "/virtual_meter", query: [meterId: meter_id]) do
       {:ok, Enum.map(meters, &Discovergy.Meter.into/1)}
     end
   end
@@ -28,6 +28,6 @@ defmodule Discovergy.VirtualMeters do
       ]
       |> Enum.reject(&match?("", &1))
 
-    get(client, "/virtual_meter", query: parameters)
+    Client.get(client, "/virtual_meter", query: parameters)
   end
 end

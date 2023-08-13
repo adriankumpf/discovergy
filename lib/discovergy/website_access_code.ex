@@ -3,7 +3,7 @@ defmodule Discovergy.WebsiteAccessCode do
   The Webste Access Code endpoint
   """
 
-  use Discovergy
+  alias Discovergy.Client
 
   @doc """
   Generates an access code that can be used to login a user into the Discovery
@@ -31,7 +31,7 @@ defmodule Discovergy.WebsiteAccessCode do
   """
   @spec generate(Client.t(), String.t()) :: {:ok, String.t()} | {:error, Error.t()}
   def generate(%Client{} = client, email) do
-    with {:ok, code} <- get(client, "/website_access_code", query: [email: email]) do
+    with {:ok, code} <- Client.get(client, "/website_access_code", query: [email: email]) do
       {:ok, code |> Map.keys() |> List.first()}
     end
   end

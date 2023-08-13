@@ -8,7 +8,7 @@ defmodule Discovergy.WebsiteAccessCodeTest do
         url: "https://api.discovergy.com/public/v1/website_access_code",
         query: [email: "$email"]
       } ->
-        text("$code", headers: [{"content-type", "application/x-www-form-urlencoded"}])
+        form(%{"$code" => true})
     end)
 
     assert {:ok, "$code"} == Discovergy.WebsiteAccessCode.generate(client, "$email")

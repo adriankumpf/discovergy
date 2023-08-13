@@ -3,7 +3,8 @@ defmodule Discovergy.Metadata do
   The Metadata endpoint
   """
 
-  use Discovergy
+  alias Discovergy.Client
+  alias Discovergy.Meter
 
   @doc """
   Returns the devices recognised for the given meter.
@@ -18,7 +19,7 @@ defmodule Discovergy.Metadata do
   """
   @spec get_devices(Client.t(), Meter.id()) :: {:ok, [String.t()]} | {:error, Error.t()}
   def get_devices(%Client{} = client, meter_id) do
-    get(client, "/devices", query: [meterId: meter_id])
+    Client.get(client, "/devices", query: [meterId: meter_id])
   end
 
   @doc """
@@ -54,7 +55,7 @@ defmodule Discovergy.Metadata do
   """
   @spec get_meters(Client.t()) :: {:ok, [Meter.t()]} | {:error, Error.t()}
   def get_meters(%Client{} = client) do
-    with {:ok, meters} <- get(client, "/meters") do
+    with {:ok, meters} <- Client.get(client, "/meters") do
       {:ok, Enum.map(meters, &Meter.into/1)}
     end
   end
@@ -71,6 +72,6 @@ defmodule Discovergy.Metadata do
   """
   @spec get_field_names(Client.t(), Meter.id()) :: {:ok, [String.t()]} | {:error, Error.t()}
   def get_field_names(%Client{} = client, meter_id) do
-    get(client, "/field_names", query: [meterId: meter_id])
+    Client.get(client, "/field_names", query: [meterId: meter_id])
   end
 end

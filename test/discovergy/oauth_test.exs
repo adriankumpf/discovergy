@@ -21,7 +21,7 @@ defmodule Discovergy.OAuthTest do
            } == token
   end
 
-  test "does not reuse the consumer" do
+  test "does not reuse the consumer", %{client: client} do
     mock(&full_authorization/1)
 
     consumer = %Discovergy.OAuth.Consumer{
@@ -33,33 +33,31 @@ defmodule Discovergy.OAuthTest do
     }
 
     assert {:ok, %Discovergy.Client{consumer: new_consumer}} =
-             Discovergy.Client.new(adapter: Tesla.Mock, consumer: consumer)
+             put_in(client.consumer, consumer)
              |> Discovergy.Client.login("$email", "$password")
 
     assert new_consumer != consumer
   end
 
-  defp full_authorization(%Tesla.Env{} = env) do
-    case env do
-      %Tesla.Env{method: :post, url: "https://api.discovergy.com/public/v1/oauth1/consumer_token"} ->
+  defp full_authorization(response) do
+    # Test body
+    case {response.method, response.url, response.body} do
+      {:post, "https://api.discovergy.com/public/v1/oauth1/consumer_token", "client=DiscoX"} ->
         json(%{key: "$key", secret: "$secret", owner: "$client_id", attributes: %{}})
 
-      %Tesla.Env{method: :post, url: "https://api.discovergy.com/public/v1/oauth1/request_token"} ->
-        text(
-          "oauth_token=$oauth_token&oauth_token_secret=$oauth_token_secret&oauth_callback_confirmed=true",
-          headers: [{"content-type", "application/x-www-form-urlencoded"}]
+      {:post, "https://api.discovergy.com/public/v1/oauth1/request_token", ""} ->
+        form(
+          oauth_callback_confirmed: "true",
+          oauth_token: "$oauth_token",
+          oauth_token_secret: "$oauth_token_secret"
         )
 
-      %Tesla.Env{method: :get, url: "https://api.discovergy.com/public/v1/oauth1/authorize"} ->
-        text("oauth_verifier=$oauth_verifier",
-          headers: [{"content-type", "application/x-www-form-urlencoded"}]
-        )
+      {:get, "https://api.discovergy.com/public/v1/oauth1/authorize", ""} ->
+        form(oauth_verifier: "$oauth_verifier")
 
-      %Tesla.Env{method: :post, url: "https://api.discovergy.com/public/v1/oauth1/access_token"} ->
-        text(
-          "oauth_token=$access_token&oauth_token_secret=$access_token_secret",
-          headers: [{"content-type", "application/x-www-form-urlencoded"}]
-        )
+      {:post, "https://api.discovergy.com/public/v1/oauth1/access_token",
+       "oauth_verifier=%24oauth_verifier"} ->
+        form(oauth_token: "$access_token", oauth_token_secret: "$access_token_secret")
     end
   end
 end

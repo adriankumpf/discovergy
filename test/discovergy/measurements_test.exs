@@ -8,8 +8,8 @@ defmodule Discovergy.MeasurementsTest do
         url: "https://api.discovergy.com/public/v1/readings",
         query: [
           meterId: "$meter_id",
-          from: 1_593_561_600_000,
-          to: 1_593_562_200_000
+          from: "1593561600000",
+          to: "1593562200000"
         ]
       } ->
         measurements = [
@@ -160,7 +160,7 @@ defmodule Discovergy.MeasurementsTest do
         url: "https://api.discovergy.com/public/v1/statistics",
         query: [
           meterId: "$meter_id",
-          from: 1_593_561_600_000,
+          from: "1593561600000",
           fields: "voltage1,voltage2,voltage3"
         ]
       } ->
@@ -189,7 +189,7 @@ defmodule Discovergy.MeasurementsTest do
     mock(fn
       %{
         method: :get,
-        query: [meterId: "$meter_id", year: 2020, month: 6, day: 1],
+        query: [meterId: "$meter_id", year: "2020", month: "6", day: "1"],
         url: "https://api.discovergy.com/public/v1/raw_load_profile"
       } ->
         json(raw_load_profile)

@@ -3,8 +3,7 @@ defmodule Discovergy.Disaggregation do
   The Disaggregation endpoint
   """
 
-  use Discovergy
-
+  alias Discovergy.Client
   alias Discovergy.{DisaggregationActivity, EnergyByDeviceMeasurement}
 
   @doc """
@@ -49,7 +48,7 @@ defmodule Discovergy.Disaggregation do
       ]
       |> Enum.reject(&match?({_, nil}, &1))
 
-    with {:ok, disaggregation} <- get(client, "/disaggregation", query: parameters) do
+    with {:ok, disaggregation} <- Client.get(client, "/disaggregation", query: parameters) do
       measurements =
         disaggregation
         |> Enum.map(&EnergyByDeviceMeasurement.into/1)
@@ -89,7 +88,7 @@ defmodule Discovergy.Disaggregation do
       to: DateTime.to_unix(to, :millisecond)
     ]
 
-    with {:ok, activities} <- get(client, "/activities", query: parameters) do
+    with {:ok, activities} <- Client.get(client, "/activities", query: parameters) do
       {:ok, Enum.map(activities, &DisaggregationActivity.into/1)}
     end
   end

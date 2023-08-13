@@ -3,12 +3,14 @@ defmodule Discovergy.Error do
   A Discovergy Error
   """
 
+  alias Discovergy.HTTPClient
+
   @type t :: %__MODULE__{
           reason: atom() | String.t(),
-          env: Tesla.Env.t()
+          response: {HTTPClient.status(), HTTPClient.headers(), HTTPClient.body()}
         }
 
-  defexception [:reason, :env]
+  defexception [:reason, :response]
 
   @impl true
   def message(%__MODULE__{reason: reason}) do

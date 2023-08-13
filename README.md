@@ -4,9 +4,20 @@
 [![Docs](https://img.shields.io/badge/hex-docs-green.svg?style=flat)](https://hexdocs.pm/discovergy)
 [![Hex.pm](https://img.shields.io/hexpm/v/discovergy?color=%23714a94)](http://hex.pm/packages/discovergy)
 
-<!-- MDOC !-->
+> A client for the [Discovergy REST API](https://api.discovergy.com/docs/), providing access to meters and measurements.
 
-> A simple wrapper for the [Discovergy REST API](https://api.discovergy.com/docs/), providing access to meters and measurements.
+## Installation
+
+Add `:discovergy` and `:finch` to your list of dependencies in `mix.exs`:
+
+```elixir
+def deps do
+  [
+    {:discovergy, "~> 0.4"},
+    {:finch, "~> 0.16"},
+  ]
+end
+```
 
 ## Usage
 
@@ -66,21 +77,6 @@ iex> Discovergy.Measurements.get_last_reading(client, "c1972a89ce3a4d58aadcb7908
 }}
 ```
 
-<!-- MDOC !-->
+## License
 
-## Installation
-
-Add `discovergy` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:discovergy, "~> 0.4"},
-    {:hackney, "~> 1.15"}
-  ]
-end
-```
-
-By default, `discovergy` uses [hackney](https://github.com/benoitc/hackney) (via `Tesla.Adapter.Hackney`). Add `hackney` to the list of dependencies too if you don't want to use another HTTP adapter (see [Tesla Adapters](https://github.com/teamon/tesla#adapters) to find all available adapters and [`Discovergy.Client.new/1`](https://hexdocs.pm/discovergy/Discovergy.Client.html#new/1) on how to configure another adapter).
-
-The docs can be found at [hexdocs.pm/discovergy](https://hexdocs.pm/discovergy).
+This project is Licensed under the [MIT License](LICENSE).

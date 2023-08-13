@@ -6,7 +6,7 @@ defmodule Discovergy.DisaggregationTest do
       %{
         method: :get,
         url: "https://api.discovergy.com/public/v1/disaggregation",
-        query: [meterId: "$meter_id", from: 1_593_561_600_000, to: 1_593_648_000_000]
+        query: [meterId: "$meter_id", from: "1593561600000", to: "1593648000000"]
       } ->
         json(%{
           "1593561600000" => %{
@@ -90,7 +90,7 @@ defmodule Discovergy.DisaggregationTest do
       %{
         method: :get,
         url: "https://api.discovergy.com/public/v1/activities",
-        query: [meterId: "$meter_id", from: 1_593_561_600_000, to: 1_593_648_000_000]
+        query: [meterId: "$meter_id", from: "1593561600000", to: "1593648000000"]
       } ->
         json([
           %{
