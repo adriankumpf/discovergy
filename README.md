@@ -13,8 +13,8 @@ Add `:discovergy` and `:finch` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:discovergy, "~> 0.4"},
-    {:finch, "~> 0.16"},
+    {:discovergy, "~> 0.6"},
+    {:finch, "~> 0.16"}
   ]
 end
 ```
