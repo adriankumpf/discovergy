@@ -15,7 +15,7 @@ defmodule Discovergy.Error do
   @impl true
   def message(%__MODULE__{reason: reason}) when is_binary(reason), do: reason
 
-  def message(%__MODULE__{reason: reason}) when is_exception(reason) do
+  def message(%__MODULE__{reason: %{__exception__: true} = reason}) do
     Exception.message(reason)
   end
 
