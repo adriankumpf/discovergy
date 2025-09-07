@@ -5,7 +5,7 @@ defmodule Discovergy.VirtualMetersTest do
     mock(fn
       %{
         method: :get,
-        url: "https://api.discovergy.com/public/v1/virtual_meter",
+        url: "https://api.inexogy.com/public/v1/virtual_meter",
         query: [meterId: "$meter_id"]
       } ->
         json([

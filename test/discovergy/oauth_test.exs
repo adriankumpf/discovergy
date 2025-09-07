@@ -42,20 +42,20 @@ defmodule Discovergy.OAuthTest do
   defp full_authorization(response) do
     # Test body
     case {response.method, response.url, response.body} do
-      {:post, "https://api.discovergy.com/public/v1/oauth1/consumer_token", "client=DiscoX"} ->
+      {:post, "https://api.inexogy.com/public/v1/oauth1/consumer_token", "client=DiscoX"} ->
         json(%{key: "$key", secret: "$secret", owner: "$client_id", attributes: %{}})
 
-      {:post, "https://api.discovergy.com/public/v1/oauth1/request_token", ""} ->
+      {:post, "https://api.inexogy.com/public/v1/oauth1/request_token", ""} ->
         form(
           oauth_callback_confirmed: "true",
           oauth_token: "$oauth_token",
           oauth_token_secret: "$oauth_token_secret"
         )
 
-      {:get, "https://api.discovergy.com/public/v1/oauth1/authorize", ""} ->
+      {:get, "https://api.inexogy.com/public/v1/oauth1/authorize", ""} ->
         form(oauth_verifier: "$oauth_verifier")
 
-      {:post, "https://api.discovergy.com/public/v1/oauth1/access_token",
+      {:post, "https://api.inexogy.com/public/v1/oauth1/access_token",
        "oauth_verifier=%24oauth_verifier"} ->
         form(oauth_token: "$access_token", oauth_token_secret: "$access_token_secret")
     end

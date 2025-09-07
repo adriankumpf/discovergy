@@ -4,7 +4,7 @@
 [![Docs](https://img.shields.io/badge/hex-docs-green.svg?style=flat)](https://hexdocs.pm/discovergy)
 [![Hex.pm](https://img.shields.io/hexpm/v/discovergy?color=%23714a94)](http://hex.pm/packages/discovergy)
 
-> A client for the [Discovergy REST API](https://api.discovergy.com/docs/), providing access to meters and measurements.
+> A client for the [Discovergy (Inexogy) REST API](https://api.inexogy.com/docs/), providing access to meters and measurements.
 
 ## Installation
 

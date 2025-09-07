@@ -5,7 +5,7 @@ defmodule Discovergy.WebsiteAccessCodeTest do
     mock(fn
       %{
         method: :get,
-        url: "https://api.discovergy.com/public/v1/website_access_code",
+        url: "https://api.inexogy.com/public/v1/website_access_code",
         query: [email: "$email"]
       } ->
         form(%{"$code" => true})

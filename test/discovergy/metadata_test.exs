@@ -3,7 +3,7 @@ defmodule Discovergy.MetadataTest do
 
   test "gets devices", %{client: client} do
     mock(fn
-      %{url: "https://api.discovergy.com/public/v1/devices", query: [meterId: "$meter_id"]} ->
+      %{url: "https://api.inexogy.com/public/v1/devices", query: [meterId: "$meter_id"]} ->
         json(["BASE_LOAD-1", "DISHWASHER-1"])
     end)
 
@@ -13,7 +13,7 @@ defmodule Discovergy.MetadataTest do
 
   test "gets meters", %{client: client} do
     mock(fn
-      %{method: :get, url: "https://api.discovergy.com/public/v1/meters"} ->
+      %{method: :get, url: "https://api.inexogy.com/public/v1/meters"} ->
         json([
           %{
             meterId: "c1972a89ce3a4d58aadcb7908a1d31c7",
@@ -71,7 +71,7 @@ defmodule Discovergy.MetadataTest do
 
   test "gets field names", %{client: client} do
     mock(fn
-      %{url: "https://api.discovergy.com/public/v1/field_names", query: [meterId: "$meter_id"]} ->
+      %{url: "https://api.inexogy.com/public/v1/field_names", query: [meterId: "$meter_id"]} ->
         json(["energy", "power"])
     end)
 

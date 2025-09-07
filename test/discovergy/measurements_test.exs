@@ -5,7 +5,7 @@ defmodule Discovergy.MeasurementsTest do
     mock(fn
       %{
         method: :get,
-        url: "https://api.discovergy.com/public/v1/readings",
+        url: "https://api.inexogy.com/public/v1/readings",
         query: [
           meterId: "$meter_id",
           from: "1593561600000",
@@ -105,7 +105,7 @@ defmodule Discovergy.MeasurementsTest do
     mock(fn
       %{
         method: :get,
-        url: "https://api.discovergy.com/public/v1/last_reading",
+        url: "https://api.inexogy.com/public/v1/last_reading",
         query: [meterId: "$meter_id", fields: "energy,power"]
       } ->
         measurement = %{
@@ -157,7 +157,7 @@ defmodule Discovergy.MeasurementsTest do
     mock(fn
       %{
         method: :get,
-        url: "https://api.discovergy.com/public/v1/statistics",
+        url: "https://api.inexogy.com/public/v1/statistics",
         query: [
           meterId: "$meter_id",
           from: "1593561600000",
@@ -190,7 +190,7 @@ defmodule Discovergy.MeasurementsTest do
       %{
         method: :get,
         query: [meterId: "$meter_id", year: "2020", month: "6", day: "1"],
-        url: "https://api.discovergy.com/public/v1/raw_load_profile"
+        url: "https://api.inexogy.com/public/v1/raw_load_profile"
       } ->
         json(raw_load_profile)
     end)

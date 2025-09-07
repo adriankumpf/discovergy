@@ -4,7 +4,7 @@ defmodule Discovergy.ErrorTest do
   test "returns an error struct", %{client: client} do
     error_msg = "400 Bad Request: The meter $meter_id is not a virtual meter"
 
-    mock(fn %{url: "https://api.discovergy.com/public/v1/virtual_meter"} ->
+    mock(fn %{url: "https://api.inexogy.com/public/v1/virtual_meter"} ->
       {:ok, 400, [], error_msg}
     end)
 

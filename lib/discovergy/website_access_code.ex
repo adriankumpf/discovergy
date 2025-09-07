@@ -18,7 +18,7 @@ defmodule Discovergy.WebsiteAccessCode do
   the code returned is only valid for **3 hours**, so it should not be cached
   but requested every time it is needed. When you received an access token, the
   portal can be accessed using the URL
-  [https://my.discovergy.com/?email=user@example.org&code=abc123](https://my.discovergy.com/?email=user@example.org&code=abc123)
+  [https://my.inexogy.com/?email=user@example.org&code=abc123](https://my.inexogy.com/?email=user@example.org&code=abc123)
   (please replace `user@example.org` by the user name you want to login and
   `abc123` by the access code you retrieved). This URL can be used as the src
   for an iframe in order to embed it into an existing web application.

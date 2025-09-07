@@ -5,7 +5,7 @@ defmodule Discovergy.DisaggregationTest do
     mock(fn
       %{
         method: :get,
-        url: "https://api.discovergy.com/public/v1/disaggregation",
+        url: "https://api.inexogy.com/public/v1/disaggregation",
         query: [meterId: "$meter_id", from: "1593561600000", to: "1593648000000"]
       } ->
         json(%{
@@ -89,7 +89,7 @@ defmodule Discovergy.DisaggregationTest do
     mock(fn
       %{
         method: :get,
-        url: "https://api.discovergy.com/public/v1/activities",
+        url: "https://api.inexogy.com/public/v1/activities",
         query: [meterId: "$meter_id", from: "1593561600000", to: "1593648000000"]
       } ->
         json([

@@ -1,6 +1,6 @@
 defmodule Discovergy do
   @moduledoc """
-  A client for the [Discovergy REST API](https://api.discovergy.com/docs/), providing access to
+  A client for the [Discovergy REST API](https://api.inexogy.com/docs/), providing access to
   meters and measurements.
 
   ## Usage

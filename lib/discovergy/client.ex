@@ -12,7 +12,7 @@ defmodule Discovergy.Client do
   @enforce_keys [:base_url, :http_client]
   defstruct [:base_url, :http_client, :consumer, :token]
 
-  @base_url "https://api.discovergy.com/public/v1"
+  @base_url "https://api.inexogy.com/public/v1"
 
   @doc """
   Creates a new Discovergy API client.
