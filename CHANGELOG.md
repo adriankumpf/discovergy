@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.0 (2025-09-07)
+
+- Use inexogy domain
+- Require Elixir 1.11.4
+- Bump dependencies
+
 ## v0.6.1 (2023-09-09)
 
 ### Bug Fixes
