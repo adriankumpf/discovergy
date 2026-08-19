@@ -1,13 +1,13 @@
 defmodule Discovergy.WebsiteAccessCode do
   @moduledoc """
-  The Webste Access Code endpoint
+  The Website Access Code endpoint
   """
 
   alias Discovergy.{Client, Error}
 
   @doc """
-  Generates an access code that can be used to login a user into the Discovery
-  Portal without the need of a password. This is useful e.g. to embed the
+  Generates an access code that can be used to log a user into the Discovergy
+  portal without the need of a password. This is useful e.g. to embed the
   Discovergy portal as an iframe into the partner's portal.
 
   The access code is only valid if the user to be logged in is the same user

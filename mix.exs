@@ -10,7 +10,7 @@ defmodule Discovergy.MixProject do
       version: @version,
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
-      description: "A simple wrapper for the Discovergy REST API",
+      description: "A client for the Discovergy (Inexogy) REST API",
       package: package(),
       docs: docs(),
       deps: deps(),
@@ -46,7 +46,7 @@ defmodule Discovergy.MixProject do
   defp docs do
     [
       extras: ~w(README.md guides/api-quirks.md CHANGELOG.md),
-      source_ref: "#{@version}",
+      source_ref: @version,
       source_url: @source_url,
       main: "readme",
       groups_for_modules: [

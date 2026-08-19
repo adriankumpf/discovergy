@@ -65,7 +65,7 @@ defmodule Discovergy do
   The main way to configure Discovergy is through the options passed to `Discovergy.Client.new/1`.
 
   To customize the behaviour of the HTTP client used by Discovergy, you can configure Discovergy
-  through the application environment . For example, you can do this in `config/runtime.exs`:
+  through the application environment. For example, you can do this in `config/runtime.exs`:
 
       # config/runtime.exs
       config :discovergy,
