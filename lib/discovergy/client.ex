@@ -127,7 +127,7 @@ defmodule Discovergy.Client do
 
     headers =
       sign(method, url, body, consumer, token) ++
-        [{"user-agent", @user_agent}, {"content-type", @form_urlencoded}]
+        [{"user-agent", @user_agent} | content_type(method)]
 
     client.http_client.request(
       method,
@@ -138,6 +138,11 @@ defmodule Discovergy.Client do
     )
     |> handle_response()
   end
+
+  # The API takes its parameters in the query string throughout; only the OAuth
+  # endpoints have a body at all, and it is form encoded.
+  defp content_type(:post), do: [{"content-type", @form_urlencoded}]
+  defp content_type(_method), do: []
 
   defp sign(_method, _url, _body, nil = _consumer, _token), do: []
 

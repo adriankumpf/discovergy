@@ -15,9 +15,17 @@ defmodule Discovergy.ClientTest do
   test "identifies itself and does not sign requests when logged out", %{client: client} do
     assert {:ok, []} = Client.get(client, "/meters")
 
-    assert_receive {:request, %{headers: headers}}
+    assert_receive {:request, %{headers: headers, body: ""}}
     assert {"user-agent", "github.com/adriankumpf/discovergy"} in headers
     refute List.keyfind(headers, "Authorization", 0)
+    refute List.keyfind(headers, "content-type", 0)
+  end
+
+  test "form encodes the body of a POST", %{client: client} do
+    assert {:ok, []} = Client.post(client, "/oauth1/consumer_token", [{"client", "DiscoX"}])
+
+    assert_receive {:request, %{headers: headers, body: "client=DiscoX"}}
+    assert {"content-type", "application/x-www-form-urlencoded"} in headers
   end
 
   @tag :logged_in
