@@ -147,9 +147,11 @@ defmodule Discovergy.Client do
     [header]
   end
 
+  # Optional parameters are passed as nil rather than dropped at every call
+  # site, because the API rejects the ones it does not expect to be empty.
   defp build_url(base_url, path, params) do
     query =
-      case params do
+      case Enum.reject(params, &match?({_key, nil}, &1)) do
         [] -> nil
         params -> URI.encode_query(params)
       end
