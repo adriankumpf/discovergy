@@ -14,7 +14,7 @@ defmodule Discovergy.MixProject do
       package: package(),
       docs: docs(),
       deps: deps(),
-      xref: [exclude: [Finch]]
+      elixirc_options: [no_warn_undefined: [Finch]]
     ]
   end
 
