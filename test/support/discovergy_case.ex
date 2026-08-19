@@ -1,60 +1,45 @@
 defmodule Discovergy.Case do
   use ExUnit.CaseTemplate
 
+  alias Discovergy.OAuth.{Consumer, Token}
+
+  @consumer %Consumer{attributes: %{}, key: "$key", owner: "$client_id", secret: "$secret"}
+  @token %Token{oauth_token: "$access_token", oauth_token_secret: "$access_token_secret"}
+
   using do
     quote do
       import Discovergy.Case
     end
   end
 
+  # Tag a test or a test module with `:logged_in` to get a client that signs
+  # its requests.
   setup tags do
-    opts =
-      if tags[:logged_in] do
-        consumer = %Discovergy.OAuth.Consumer{
-          attributes: %{},
-          key: "$key",
-          owner: "$client_id",
-          secret: "$secret"
-        }
+    credentials = if tags[:logged_in], do: [consumer: @consumer, token: @token], else: []
 
-        token = %Discovergy.OAuth.Token{
-          oauth_token: "$access_token",
-          oauth_token_secret: "$access_token_secret"
-        }
-
-        [consumer: consumer, token: token]
-      else
-        []
-      end
-
-    client = Discovergy.Client.new([http_client: TestClient] ++ opts)
-
-    {:ok, client: client}
+    {:ok, client: Discovergy.Client.new([http_client: TestClient] ++ credentials)}
   end
 
   def mock(fun) do
     Process.put(:request_mock, fn method, url, headers, body, req_opts ->
       uri = URI.parse(url)
-      url = put_in(uri.query, nil) |> URI.to_string()
 
       query =
-        if is_binary(uri.query) do
-          uri.query
-          |> URI.query_decoder()
-          |> Enum.map(fn {key, val} -> {String.to_atom(key), val} end)
+        if uri.query do
+          for {key, value} <- URI.query_decoder(uri.query), do: {String.to_atom(key), value}
         end
 
-      response = %{
+      fun.(%{
         method: method,
-        url: url,
+        url: URI.to_string(%{uri | query: nil}),
         query: query,
         headers: headers,
         body: body,
         req_opts: req_opts
-      }
-
-      fun.(response)
+      })
     end)
+
+    :ok
   end
 
   def json(data) do

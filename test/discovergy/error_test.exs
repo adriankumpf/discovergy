@@ -1,5 +1,7 @@
 defmodule Discovergy.ErrorTest do
-  use Discovergy.Case, logged_in: true, async: true
+  use Discovergy.Case, async: true
+
+  @moduletag :logged_in
 
   test "returns an error struct", %{client: client} do
     error_msg = "400 Bad Request: The meter $meter_id is not a virtual meter"

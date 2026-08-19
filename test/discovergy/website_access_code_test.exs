@@ -1,5 +1,7 @@
 defmodule Discovergy.WebsiteAccessCodeTest do
-  use Discovergy.Case, logged_in: true, async: true
+  use Discovergy.Case, async: true
+
+  @moduletag :logged_in
 
   test "generates a website access code", %{client: client} do
     mock(fn

@@ -1,5 +1,7 @@
 defmodule Discovergy.MetadataTest do
-  use Discovergy.Case, logged_in: true, async: true
+  use Discovergy.Case, async: true
+
+  @moduletag :logged_in
 
   test "gets devices", %{client: client} do
     mock(fn

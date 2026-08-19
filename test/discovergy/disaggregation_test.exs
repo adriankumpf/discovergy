@@ -1,5 +1,7 @@
 defmodule Discovergy.DisaggregationTest do
-  use Discovergy.Case, logged_in: true, async: true
+  use Discovergy.Case, async: true
+
+  @moduletag :logged_in
 
   test "gets disaggregated energy", %{client: client} do
     mock(fn

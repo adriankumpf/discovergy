@@ -1,5 +1,7 @@
 defmodule Discovergy.MeasurementsTest do
-  use Discovergy.Case, logged_in: true, async: true
+  use Discovergy.Case, async: true
+
+  @moduletag :logged_in
 
   test "gets readings", %{client: client} do
     mock(fn
