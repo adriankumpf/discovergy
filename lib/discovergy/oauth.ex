@@ -1,7 +1,7 @@
 defmodule Discovergy.OAuth do
   @moduledoc false
 
-  alias Discovergy.{Client, Error, Model}
+  alias Discovergy.{Client, Error}
 
   @client_id "DiscoX"
 
@@ -96,8 +96,8 @@ defmodule Discovergy.OAuth do
     body = [{"oauth_verifier", verifier}]
     opts = [consumer: consumer, token: request_token]
 
-    with {:ok, response} <- Client.post(client, "/oauth1/access_token", body, opts) do
-      {:ok, Token.into(URI.decode_query(response))}
+    with {:ok, response_body} <- Client.post(client, "/oauth1/access_token", body, opts) do
+      {:ok, Token.into(URI.decode_query(response_body))}
     end
   end
 end
