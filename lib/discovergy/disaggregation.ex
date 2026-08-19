@@ -52,7 +52,7 @@ defmodule Discovergy.Disaggregation do
       measurements =
         disaggregation
         |> Enum.map(&EnergyByDeviceMeasurement.into/1)
-        |> Enum.sort_by(& &1.time, Date)
+        |> Enum.sort_by(& &1.time, DateTime)
 
       {:ok, measurements}
     end

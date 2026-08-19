@@ -85,6 +85,29 @@ defmodule Discovergy.DisaggregationTest do
              )
   end
 
+  test "sorts the disaggregated energy chronologically", %{client: client} do
+    # A whole day of 15 minute intervals: enough keys for the decoded JSON
+    # object to come back in an order that is neither chronological nor stable.
+    from = ~U[2020-07-01 00:00:00Z]
+    times = for i <- 0..95, do: DateTime.add(from, i * 15, :minute)
+
+    mock(fn %{url: "https://api.inexogy.com/public/v1/disaggregation"} ->
+      json(Map.new(times, &{DateTime.to_unix(&1, :millisecond), %{"Grundlast-1" => 1}}))
+    end)
+
+    assert {:ok, measurements} =
+             Discovergy.Disaggregation.get_energy_by_device_measurements(
+               client,
+               "$meter_id",
+               from
+             )
+
+    returned = Enum.map(measurements, & &1.time)
+
+    assert length(returned) == length(times)
+    assert returned == Enum.sort(returned, DateTime)
+  end
+
   test "gets activities", %{client: client} do
     mock(fn
       %{
