@@ -12,6 +12,7 @@
 
 ### Changes
 
+- Add the `kwh_scaling_factor`, `printed_full_serial_number` and `submeter` fields to `Discovergy.Meter`. The API returns them but they were silently dropped.
 - Bump dependencies
 
 ## v0.7.0 (2025-09-07)
