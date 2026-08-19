@@ -6,10 +6,21 @@
 
 - Remove `Discovergy.Measurements.get_raw_load_profile/3`. The `/raw_load_profile` endpoint no longer exists and the API returns a 404 for every request, so the function could not succeed.
 - Require Elixir 1.15. The `finch`, `mint` and `hpax` releases carrying the fixes for [CVE-2026-58226](https://osv.dev/vulnerability/EEF-CVE-2026-58226), [CVE-2026-49754](https://osv.dev/vulnerability/EEF-CVE-2026-49754) and [CVE-2026-48862](https://osv.dev/vulnerability/EEF-CVE-2026-48862) no longer compile on older versions.
+- `Discovergy.WebsiteAccessCode.generate/2` returns the access code as the API sends it. It used to be decoded as a query string, and the first key of the resulting map was returned as the code.
+- An unsuccessful response with an empty body is reported as `{:http_error, status}` instead of `:unknown`, which rendered as `":unknown"`.
 
 ### Bug Fixes
 
 - Fix `Discovergy.Client.login/3` failing on a client that had already logged in. The consumer of the previous session was kept and used to sign the two requests that open the OAuth flow, which have to go out unsigned, so the API rejected them.
+- Fix `Discovergy.VirtualMeters.create_virtual_meter/3` sending a `GET`. Creating a virtual meter is a `POST`; the `GET` route expects a `meterId` and rejected the call. It also returns the new meter, which is now decoded into a `Discovergy.Meter`. `meterIdsMinus` is dropped when no meters are subtracted, as was intended.
+- Fix `Discovergy.Disaggregation.get_energy_by_device_measurements/4` returning measurements in an arbitrary order. They were sorted with `Date`, which only compares year, month and day, so every measurement of a day compared equal.
+- Recognise content types that carry parameters, such as `application/json; charset=utf-8`. A JSON body labelled that way was handed back undecoded.
+- Report a malformed response body as an error instead of raising `Jason.DecodeError`.
+- Fix the typespecs of the endpoint functions, which referred to `Error.t/0` and `Meter.id/0` without an alias and so named modules that do not exist. Dialyzer treated the whole public API as unknown.
+
+### Security
+
+- Redact the OAuth secrets from `Discovergy.Client`, `Discovergy.OAuth.Consumer` and `Discovergy.OAuth.Token` when they are inspected, so a Logger metadata field or a crash report no longer prints the credentials of the session.
 
 ### Changes
 
@@ -18,6 +29,7 @@
 - Add the `kwh_scaling_factor`, `printed_full_serial_number`, `storage_numbers` and `submeter` fields to `Discovergy.Meter`. The API returns them but they were silently dropped.
 - Fix the `Discovergy.Measurement` typespec: `values` is a map, not a list of maps.
 - Document that the disaggregation endpoints reject intervals longer than one week.
+- Treat any 2xx as a successful response.
 - Bump dependencies
 
 ## v0.7.0 (2025-09-07)
