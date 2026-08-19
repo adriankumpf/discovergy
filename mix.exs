@@ -8,7 +8,7 @@ defmodule Discovergy.MixProject do
     [
       app: :discovergy,
       version: @version,
-      elixir: "~> 1.11",
+      elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       description: "A simple wrapper for the Discovergy REST API",
       package: package(),

@@ -146,26 +146,9 @@ defmodule Discovergy.Client do
 
     base_url
     |> URI.parse()
-    |> append_path(path)
+    |> URI.append_path(path)
     |> Map.put(:query, query)
     |> URI.to_string()
-  end
-
-  # Replace with `URI.append_path/2` once Elixir 1.15 is required
-  defp append_path(%URI{}, "//" <> _ = path) do
-    raise ArgumentError, ~s|path cannot start with "//", got: #{inspect(path)}|
-  end
-
-  defp append_path(%URI{path: path} = uri, "/" <> rest = all) do
-    cond do
-      path == nil -> %{uri | path: all}
-      path != "" and :binary.last(path) == ?/ -> %{uri | path: path <> rest}
-      true -> %{uri | path: path <> all}
-    end
-  end
-
-  defp append_path(%URI{}, path) when is_binary(path) do
-    raise ArgumentError, ~s|path must start with "/", got: #{inspect(path)}|
   end
 
   defp encode_body(%{body: body} = request) when not is_nil(body) do
