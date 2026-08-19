@@ -10,6 +10,13 @@ defmodule Discovergy do
       iex> {:ok, client} = Discovergy.Client.new() |> Discovergy.Client.login(email, password)
       {:ok, #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>}
 
+  Access tokens expire. Use `Discovergy.Client.reauthorize/3` to get a new one
+  rather than logging in again, so the consumer registered by `login/3` is
+  reused. Consumer registration is rate limited per IP, so an application that
+  renews its token by logging in again is eventually answered with a `429`. See
+  [Quirks of the API](api-quirks.md) for the rest of what running against it
+  turned up.
+
   Then pass the `client` to the respective endpoint function. For example, to list all meters the user has access to:
 
       iex> Discovergy.Metadata.get_meters(client)

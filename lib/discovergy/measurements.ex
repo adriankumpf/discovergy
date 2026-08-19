@@ -29,7 +29,10 @@ defmodule Discovergy.Measurements do
 
     * `:to` - end of the interval. Left to the API if omitted.
     * `:fields` - list of measurement fields to return in the result (use
-    `Discovergy.Metadata.get_field_names/2` to get all available fields)
+    `Discovergy.Metadata.get_field_names/2` to get all available fields). A
+    name the meter does not have is dropped rather than reported, and the
+    names `get_field_names/2` returns do not all round-trip; see [Quirks of
+    the API](api-quirks.md)
     * `:resolution` - time distance between returned readings, see
     `t:resolution/0` (default: `:raw`)
     * `:disaggregation` - Include load disaggregation as pseudo-measurement
@@ -91,7 +94,10 @@ defmodule Discovergy.Measurements do
   ## Options
 
     * `:fields` - list of measurement fields to return in the result (use
-    `Discovergy.Metadata.get_field_names/2` to get all available fields)
+    `Discovergy.Metadata.get_field_names/2` to get all available fields). A
+    name the meter does not have is dropped rather than reported, and the
+    names `get_field_names/2` returns do not all round-trip; see [Quirks of
+    the API](api-quirks.md)
     * `:each` - Return data from the virtual meter itself (false) or all its
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
@@ -134,7 +140,10 @@ defmodule Discovergy.Measurements do
 
     * `:to` - end of the interval. Left to the API if omitted.
     * `:fields` - list of measurement fields to return in the result (use
-    `Discovergy.Metadata.get_field_names/2` to get all available fields)
+    `Discovergy.Metadata.get_field_names/2` to get all available fields). A
+    name the meter does not have is dropped, unless every name is unknown, in
+    which case the endpoint answers `500`; see [Quirks of the
+    API](api-quirks.md)
 
   ## Examples
 

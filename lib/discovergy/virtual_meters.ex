@@ -27,6 +27,10 @@ defmodule Discovergy.VirtualMeters do
   The readings of the meters in `meter_ids_plus` are added up, those in
   `meter_ids_minus` are subtracted.
 
+  There is no way to remove one again: the API documents
+  `DELETE /virtual_meter` but answers `501` to it. See [Quirks of the
+  API](api-quirks.md).
+
   ## Examples
 
       iex> Discovergy.VirtualMeters.create_virtual_meter(client, [meter_id, other_meter_id])

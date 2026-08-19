@@ -39,7 +39,9 @@
 - Add `Discovergy.Client.reauthorize/3`, which obtains a new access token while reusing the consumer registered by `login/3`. The API rate limits `consumer_token` requests and asks clients to reuse tokens, so an application that refreshed by calling `login/3` again would eventually be answered with a `429`.
 - Add the `kwh_scaling_factor`, `printed_full_serial_number`, `storage_numbers` and `submeter` fields to `Discovergy.Meter`. The API returns them but they were silently dropped.
 - Fix the `Discovergy.Measurement` typespec: `values` is a map, not a list of maps.
-- Document that the disaggregation endpoints reject intervals longer than one week.
+- Document the interval limits of the disaggregation endpoints: `Discovergy.Disaggregation.get_energy_by_device_measurements/4` rejects anything longer than a week, `get_activities/4` anything longer than a month.
+- Document that `DELETE /virtual_meter` answers `501` on every account tried, so a virtual meter cannot be removed through the API and the library offers no `delete_virtual_meter/2`.
+- Document the `:fields` option's two traps: the names `Discovergy.Metadata.get_field_names/2` returns do not all round-trip (`storage` comes back as `storageNumber` from the reading endpoints and as `storage` from `/statistics`), and an unknown name is dropped rather than reported, except on `/statistics`, which answers `500` when every requested name is unknown.
 - Treat any 2xx as a successful response.
 - Bump dependencies
 

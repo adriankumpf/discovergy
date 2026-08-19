@@ -68,11 +68,11 @@ defmodule Discovergy.Disaggregation do
   Returns the activities recognised for the given meter during the given
   interval.
 
-  The API rejects intervals longer than one week with a `400`.
+  The API rejects intervals longer than one month with a `400`.
 
   ## Examples
 
-      iex> Discovergy.Measurements.get_activities(client, meter_id, from, to)
+      iex> Discovergy.Disaggregation.get_activities(client, meter_id, from, to)
       {:ok, [
         %Discovergy.DisaggregationActivity{
           activity_id: 77,
