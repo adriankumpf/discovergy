@@ -35,14 +35,18 @@ defmodule Discovergy.Meter do
           first_measurement_time: non_neg_integer,
           full_serial_number: String.t(),
           internal_meters: non_neg_integer,
+          kwh_scaling_factor: integer,
           last_measurement_time: non_neg_integer,
           load_profile_type: String.t(),
           location: Discovergy.Location.t(),
           manufacturer_id: String.t(),
           measurement_type: String.t(),
           meter_id: String.t(),
+          printed_full_serial_number: String.t(),
           scaling_factor: integer(),
           serial_number: String.t(),
+          storage_numbers: [integer],
+          submeter: boolean,
           type: String.t(),
           voltage_scaling_factor: integer
         }
@@ -55,14 +59,18 @@ defmodule Discovergy.Meter do
     :first_measurement_time,
     :full_serial_number,
     :internal_meters,
+    :kwh_scaling_factor,
     :last_measurement_time,
     :load_profile_type,
     :location,
     :manufacturer_id,
     :measurement_type,
     :meter_id,
+    :printed_full_serial_number,
     :scaling_factor,
     :serial_number,
+    :storage_numbers,
+    :submeter,
     :type,
     :voltage_scaling_factor
   ]
@@ -72,6 +80,8 @@ defmodule Discovergy.Meter do
     fields =
       Enum.map(attrs, fn
         {"location", location} -> {:location, Discovergy.Location.into(location)}
+        # Macro.underscore/1 turns this into "k_wh_scaling_factor"
+        {"kWhScalingFactor", value} -> {:kwh_scaling_factor, value}
         {key, value} -> camel_cased_key_to_existing_atom({key, value})
       end)
 
@@ -98,7 +108,7 @@ defmodule Discovergy.Measurement do
 
   @type t :: %__MODULE__{
           time: DateTime.t(),
-          values: [map]
+          values: map
         }
 
   defstruct [:time, :values]

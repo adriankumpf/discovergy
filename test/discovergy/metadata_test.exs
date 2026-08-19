@@ -20,6 +20,7 @@ defmodule Discovergy.MetadataTest do
             manufacturerId: "ESY",
             serialNumber: "61229886",
             fullSerialNumber: "1ESY1161229886",
+            printedFullSerialNumber: "1ESY1161229886",
             location: %{
               street: "Sedanstr.",
               streetNumber: "8",
@@ -34,6 +35,9 @@ defmodule Discovergy.MetadataTest do
             scalingFactor: 1,
             currentScalingFactor: 1,
             voltageScalingFactor: 1,
+            kWhScalingFactor: 10_000_000_000,
+            storageNumbers: [1, 7, 14],
+            submeter: false,
             internalMeters: 1,
             firstMeasurementTime: 1_563_286_659_367,
             lastMeasurementTime: 1_594_130_690_730
@@ -49,6 +53,7 @@ defmodule Discovergy.MetadataTest do
                 first_measurement_time: 1_563_286_659_367,
                 full_serial_number: "1ESY1161229886",
                 internal_meters: 1,
+                kwh_scaling_factor: 10_000_000_000,
                 last_measurement_time: 1_594_130_690_730,
                 load_profile_type: "SLP",
                 location: %Discovergy.Location{
@@ -61,8 +66,11 @@ defmodule Discovergy.MetadataTest do
                 manufacturer_id: "ESY",
                 measurement_type: "ELECTRICITY",
                 meter_id: "c1972a89ce3a4d58aadcb7908a1d31c7",
+                printed_full_serial_number: "1ESY1161229886",
                 scaling_factor: 1,
                 serial_number: "61229886",
+                storage_numbers: [1, 7, 14],
+                submeter: false,
                 type: "EASYMETER",
                 voltage_scaling_factor: 1
               }

@@ -32,6 +32,7 @@ defmodule Discovergy.Metadata do
          meter_id: "c1972a89ce3a4d58aadcb7908a1d31c7",
          serial_number: "61229886",
          full_serial_number: "1ESY1161229886",
+         printed_full_serial_number: "1ESY1161229886",
          location: %Discovergy.Location{
            city: "Greven",
            country: "DE",
@@ -46,6 +47,9 @@ defmodule Discovergy.Metadata do
          scaling_factor: 1,
          current_scaling_factor: 1,
          voltage_scaling_factor: 1,
+         kwh_scaling_factor: 10000000000,
+         storage_numbers: [1, 7, 14],
+         submeter: false,
          internal_meters: 1,
          first_measurement_time: 1563286659367,
          last_measurement_time: 1593952103706,
