@@ -32,7 +32,7 @@ Access tokens expire. To get a new one, use `Discovergy.Client.reauthorize/3` ra
 
 ```elixir
 iex> {:ok, client} = Discovergy.Client.reauthorize(client, email, password)
-{:ok, %Discovergy.Client{}}
+{:ok, #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>}
 ```
 
 The API rate limits consumer registrations, so an application that renews its token by logging in again is eventually turned away with a `429`.

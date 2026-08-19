@@ -38,6 +38,15 @@ defmodule Discovergy.Client do
   - `:base_url` - the base URL for all endpoints (default: `#{@base_url}`)
   - `:http_client` - a module implementing the `Discovergy.HTTPClient`
     behaviour (default: the `:client` application environment setting)
+  - `:consumer` - the consumer of a previous session, taken from
+    `client.consumer` after a `login/3`
+  - `:token` - the access token of a previous session, taken from
+    `client.token`
+
+  Passing `:consumer` and `:token` restores a session that was persisted
+  elsewhere, so a restart neither registers another consumer nor spends an
+  `authorize` call. Both are rate limited per IP. The client is then usable
+  right away, and `reauthorize/3` works on it once the token expires.
 
   ## Examples
 
@@ -92,7 +101,7 @@ defmodule Discovergy.Client do
   ## Examples
 
       iex> {:ok, client} = Discovergy.Client.reauthorize(client, email, password)
-      {:ok, %Discovergy.Client{}}
+      {:ok, #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>}
 
   """
   @spec reauthorize(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}

@@ -23,9 +23,10 @@ expire, no consumer to register, and neither of the rate limits. The
 it exclusively for years.
 
 This library uses OAuth 1.0a, which the official documentation describes as the
-way in. Basic auth is undocumented, so it carries the risk that anything
-undocumented does: it could be withdrawn without notice. The token behaviour
-below applies whenever OAuth is used.
+way in, and exposes no way to send Basic auth instead. Basic auth is
+undocumented, so it carries the risk that anything undocumented does: it could
+be withdrawn without notice. Everything below applies whenever OAuth is used,
+which here is always.
 
 ## A public demo account exists
 
@@ -33,6 +34,13 @@ below applies whenever OAuth is used.
 RLM meter. Useful for reproducing behaviour that a single-meter account cannot
 show, such as the `storageNumbers` field, which some meters return and others
 do not.
+
+It is read-only in practice, so `Discovergy.VirtualMeters.create_virtual_meter/3`
+cannot be exercised with it:
+
+```
+403 Forbidden: You do not have permission to create virtual meters
+```
 
 ## Access tokens expire
 
@@ -45,8 +53,9 @@ to pre-empt with a timer.
 
 ## An expired token is a 401 with an empty body
 
-The API sends no body with it, so `Discovergy.Error` carries `reason: :unknown`
-rather than a message. Match on the status, never on the reason:
+The API sends no body with it, so `Discovergy.Error` carries
+`reason: {:http_error, 401}` rather than a message. Match on the status, never
+on the reason:
 
 ```elixir
 case Discovergy.Measurements.get_last_reading(client, meter_id) do
@@ -104,12 +113,16 @@ client = Discovergy.Client.new(consumer: consumer, token: token)
 `authorize` is limited more tightly than `consumer_token`. Two calls in quick
 succession from one address are enough to trigger it.
 
-## Upstream errors arrive as HTML
+## Errors are plain text, except when they are HTML
 
-A failing upstream returns nginx's own error page rather than JSON or the
-plain-text errors the API produces itself, so `Error.reason` is a screenful of
-HTML. Lead with the status when logging, or the message buries everything
-around it:
+The API writes its own errors as `text/plain`, with the status repeated in the
+body: `400 Bad Request: The interval length must not exceed 1 day at this
+resolution`. `Discovergy.Error` puts that whole string in `:reason`, so
+`Exception.message/1` reads well on its own.
+
+The exception is a request nginx answers itself, which comes back as its error
+page and makes `Error.reason` a screenful of HTML. Lead with the status when
+logging, or the message buries everything around it:
 
 ```elixir
 case error.response do
@@ -118,24 +131,98 @@ case error.response do
 end
 ```
 
-A routing-layer 404 in this form, rather than the API's plain-text `404`, means
-the endpoint itself is gone.
+A 404 in that form, rather than the API's own plain-text one, means the request
+never reached the API and the endpoint is gone. The Swagger UI at `/docs/` is
+generated from [`/docs/swagger.json`](https://api.inexogy.com/docs/swagger.json),
+which lists endpoints that answer this way: the whole `Calendar` group
+(`/calendars`, `/calendars/intervals`) is documented but not deployed.
 
 ## The meter schema is undocumented and grows
 
 `/meters` returns fields the documentation never lists, and new ones appear
-without notice. `Discovergy.Meter` ignores anything it does not model, so an
-unknown field is dropped rather than raising, but it will not be available
-until the struct catches up.
+without notice. Against the `Meter` definition in `swagger.json`, the extras
+are currently `kWhScalingFactor` and `submeter`; `Discovergy.Meter` models
+both, as `kwh_scaling_factor` and `submeter`.
+
+`Discovergy.Meter` ignores anything it does not model, so a field added later
+is dropped rather than raising, but it will not be available until the struct
+catches up.
 
 Which fields come back also varies by meter: `storageNumbers` is present on
-some and absent on others.
+some and absent on others, so `nil` there means the meter did not report it
+rather than that it has none.
 
-## Disaggregation is capped at one week
+## `get_field_names/2` does not round-trip into `:fields`
 
-`Discovergy.Disaggregation.get_energy_by_device_measurements/4` and
-`get_activities/4` reject anything longer:
+The names `Discovergy.Metadata.get_field_names/2` returns are not all names the
+reading endpoints answer to, and feeding them straight back is the obvious
+thing to do:
+
+```elixir
+{:ok, names} = Discovergy.Metadata.get_field_names(client, meter_id)
+# ["energy", "power", "power1", "power2", "power3", "energyOut", "storage", "gatewayStatus"]
+
+{:ok, measurement} = Discovergy.Measurements.get_last_reading(client, meter_id, fields: names)
+Map.keys(measurement.values)
+# ["energy", "energyOut", "gatewayStatus", "power", "power1", "power2", "power3", "storageNumber"]
+```
+
+`storage` went in, `storageNumber` came out, and asking for `storageNumber`
+directly returns nothing. `/statistics` keys the same value as `storage`, so
+the name to use depends on the endpoint.
+
+## An unknown field name is not an error
+
+`:fields` entries the meter does not have are dropped, and the reply is a `200`
+without them, so a typo costs you a field rather than raising:
+
+```elixir
+Discovergy.Measurements.get_last_reading(client, meter_id, fields: ["powr"])
+{:ok, %Discovergy.Measurement{values: %{}}}
+```
+
+`/statistics` is the exception, and only when *every* requested field is
+unknown, in which case it fails rather than returning an empty map:
 
 ```
-400 Bad Request: Duration of the data cannot be larger than 1 week
+500 Internal Server Error
+```
+
+One valid field is enough to get a `200` back with the unknown ones dropped.
+
+## `DELETE /virtual_meter` is documented but not implemented
+
+`swagger.json` lists it, and the route is real, but it answers `501` with an
+empty body:
+
+```
+$ curl -u '<email>:<password>' -X DELETE 'https://api.inexogy.com/public/v1/virtual_meter?meterId=000...0'
+HTTP/2 501
+content-length: 0
+```
+
+A `GET` on the same path with the same meter id gets as far as validating it:
+
+```
+400 Bad Request: Unable to find meter with meterId: 000...0
+```
+
+So the request authenticates and routes; it is the `DELETE` handler that is
+missing. Confirmed on two unrelated accounts, so it is not a permission the
+account lacks, which the API reports as a `403` with a message. The empty body
+means this arrives as `reason: {:http_error, 501}`.
+
+There is no `Discovergy.VirtualMeters.delete_virtual_meter/2` because there is
+nothing for it to call. Virtual meters created through
+`create_virtual_meter/3` cannot be removed through the API.
+
+## The two disaggregation endpoints cap the interval differently
+
+`Discovergy.Disaggregation.get_energy_by_device_measurements/4` rejects
+anything longer than a week, `get_activities/4` anything longer than a month.
+The documentation gives neither limit:
+
+```
+400 Bad Request: Duration of the data cannot be larger than 1 week. Please try for a smaller duration.
+400 Bad Request: Duration of the data cannot be larger than 1 month. Please try for a smaller duration.
 ```
