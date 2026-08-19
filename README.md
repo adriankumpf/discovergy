@@ -90,6 +90,12 @@ iex> Discovergy.Measurements.get_last_reading(client, "c1972a89ce3a4d58aadcb7908
 }}
 ```
 
+## Quirks of the API
+
+The API behaves in ways its [official documentation](https://api.inexogy.com/docs/) does not cover: access tokens expire and come back as a `401` with an empty body, consumer registration and authorization are rate limited per IP, upstream errors arrive as HTML, and `/meters` returns fields that are documented nowhere. Plain HTTP Basic auth also works on every data endpoint, undocumented, which avoids the token lifecycle entirely.
+
+[Quirks of the API](guides/api-quirks.md) collects what running against it turned up.
+
 ## License
 
 This project is Licensed under the [MIT License](LICENSE).
