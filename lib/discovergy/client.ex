@@ -51,7 +51,10 @@ defmodule Discovergy.Client do
   @spec login(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
   def login(%__MODULE__{} = client, email, password)
       when is_binary(email) and is_binary(password) do
-    client = put_in(client.token, nil)
+    # The consumer_token and authorize requests have to go out unsigned, and
+    # build_request/5 falls back to the client's credentials, so without this a
+    # client that had logged in before could never log in again.
+    client = %__MODULE__{client | consumer: nil, token: nil}
 
     with {:ok, {consumer, token}} <- OAuth.login(client, email, password) do
       {:ok, %__MODULE__{client | token: token, consumer: consumer}}
