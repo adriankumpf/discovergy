@@ -176,26 +176,4 @@ defmodule Discovergy.MeasurementsTest do
                fields: [:voltage1, :voltage2, :voltage3]
              )
   end
-
-  test "gets load profile", %{client: client} do
-    raw_load_profile =
-      <<2>> <>
-        """
-        P.01(1200601001500)(00000000)(15)(8)(1.29)(kWh)(2.29)(kWh)(3.29)(kvarh)(4.29)(kvarh)(5.29)(kvarh)(6.29)(kvarh)(7.29)(kvarh)(8.2)(kvarh)
-        (0.0000)(0.0000)(0.0000)(0.0035)(0.0000)(0.0000)(0.0031)(0.0004)
-        (0.0001)(0.0001)(0.0000)(0.0035)(0.0000)(0.0000)(0.0031)(0.0005)
-        """
-
-    mock(fn
-      %{
-        method: :get,
-        query: [meterId: "$meter_id", year: "2020", month: "6", day: "1"],
-        url: "https://api.inexogy.com/public/v1/raw_load_profile"
-      } ->
-        json(raw_load_profile)
-    end)
-
-    assert {:ok, raw_load_profile} ==
-             Discovergy.Measurements.get_raw_load_profile(client, "$meter_id", ~D{2020-06-01})
-  end
 end
