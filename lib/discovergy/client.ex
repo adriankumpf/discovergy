@@ -1,6 +1,13 @@
 defmodule Discovergy.Client do
   @moduledoc """
   A Discovergy API Client
+
+  Access tokens expire, and an expired one comes back as a `401` with an empty
+  body. Use `refresh/3` rather than `login/3` to renew one: the API rate limits
+  consumer registration and asks clients to reuse tokens.
+
+  See [Quirks of the API](api-quirks.md) for the behaviour this library has to
+  work around.
   """
 
   alias Discovergy.{Config, OAuth, Error}
