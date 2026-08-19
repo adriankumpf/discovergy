@@ -38,7 +38,12 @@ defmodule Discovergy.Disaggregation do
       ]}
 
   """
-  @spec get_energy_by_device_measurements(Client.t(), Meter.id(), DateTime.t(), DateTime.t()) ::
+  @spec get_energy_by_device_measurements(
+          Client.t(),
+          Meter.id(),
+          DateTime.t(),
+          DateTime.t() | nil
+        ) ::
           {:ok, [EnergyByDeviceMeasurement.t()]} | {:error, Error.t()}
   def get_energy_by_device_measurements(%Client{} = client, meter_id, from, to \\ nil) do
     parameters = [

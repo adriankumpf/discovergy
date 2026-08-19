@@ -63,7 +63,7 @@ defmodule Discovergy.Measurements do
       ]}
 
   """
-  @spec get_readings(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
+  @spec get_readings(Client.t(), Meter.id(), DateTime.t(), DateTime.t() | nil, Keyword.t()) ::
           {:ok, [Measurement.t()]} | {:error, Error.t()}
   def get_readings(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters = [
@@ -166,7 +166,7 @@ defmodule Discovergy.Measurements do
         }
       }}
   """
-  @spec get_statistics(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
+  @spec get_statistics(Client.t(), Meter.id(), DateTime.t(), DateTime.t() | nil, Keyword.t()) ::
           {:ok, map()} | {:error, Error.t()}
   def get_statistics(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
     parameters = [
