@@ -28,6 +28,15 @@ iex> {:ok, client} = Discovergy.Client.new() |> Discovergy.Client.login(email, p
 {:ok, %Discovergy.Client{}}
 ```
 
+Access tokens expire. To get a new one, use `Discovergy.Client.refresh/3` rather than logging in again, so the consumer registered by `login/3` is reused:
+
+```elixir
+iex> {:ok, client} = Discovergy.Client.refresh(client, email, password)
+{:ok, %Discovergy.Client{}}
+```
+
+The API rate limits consumer registrations, so an application that refreshes by logging in again is eventually turned away with a `429`.
+
 Then pass the `client` to the respective endpoint function. For example, to list all meters the user has access to:
 
 ```elixir

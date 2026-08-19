@@ -13,9 +13,7 @@ defmodule Discovergy.OAuth do
           {:ok, {Consumer.t(), Token.t()}} | {:error, Error.t()}
   def login(%Client{} = client, email, password) do
     with {:ok, consumer} <- register_consumer(client, @client_id),
-         {:ok, request_token} <- get_request_token(client, consumer),
-         {:ok, grant} <- authorize(client, request_token, email, password),
-         {:ok, access_token} <- get_access_token(client, consumer, request_token, grant) do
+         {:ok, access_token} <- refresh(client, consumer, email, password) do
       {:ok, {consumer, access_token}}
     end
   end
@@ -60,13 +58,28 @@ defmodule Discovergy.OAuth do
   end
 
   @doc """
+  Authorization steps 2 to 4, for a consumer that is already registered.
+  """
+  @spec refresh(Client.t(), Consumer.t(), String.t(), String.t()) ::
+          {:ok, Token.t()} | {:error, Error.t()}
+  def refresh(%Client{} = client, %Consumer{} = consumer, email, password) do
+    with {:ok, request_token} <- get_request_token(client, consumer),
+         {:ok, grant} <- authorize(client, request_token, email, password) do
+      get_access_token(client, consumer, request_token, grant)
+    end
+  end
+
+  @doc """
   Authorization step 1
 
   See the [OAuth 1.0 specification](https://tools.ietf.org/html/rfc5849) for details.
   """
   @spec register_consumer(Client.t(), String.t()) :: {:ok, Consumer.t()} | {:error, Error.t()}
   def register_consumer(%Client{} = client, client_id) do
-    with {:ok, consumer} <- Client.post(client, "/oauth1/consumer_token", [{"client", client_id}]) do
+    opts = [consumer: nil, token: nil]
+
+    with {:ok, consumer} <-
+           Client.post(client, "/oauth1/consumer_token", [{"client", client_id}], opts) do
       {:ok, Consumer.into(consumer)}
     end
   end
@@ -79,7 +92,7 @@ defmodule Discovergy.OAuth do
   @spec get_request_token(Client.t(), Consumer.t()) :: {:ok, Token.t()} | {:error, Error.t()}
   def get_request_token(%Client{} = client, %Consumer{} = consumer) do
     with {:ok, request_token} <-
-           Client.post(client, "/oauth1/request_token", [], consumer: consumer) do
+           Client.post(client, "/oauth1/request_token", [], consumer: consumer, token: nil) do
       {:ok, Token.into(request_token)}
     end
   end
@@ -94,7 +107,9 @@ defmodule Discovergy.OAuth do
   def authorize(%Client{} = client, %Token{} = request_token, email, password) do
     query = [email: email, password: password, oauth_token: request_token.oauth_token]
 
-    with {:ok, grant} <- Client.get(client, "/oauth1/authorize", query: query) do
+    opts = [query: query, consumer: nil, token: nil]
+
+    with {:ok, grant} <- Client.get(client, "/oauth1/authorize", opts) do
       {:ok, Grant.into(grant)}
     end
   end

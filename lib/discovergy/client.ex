@@ -51,13 +51,39 @@ defmodule Discovergy.Client do
   @spec login(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
   def login(%__MODULE__{} = client, email, password)
       when is_binary(email) and is_binary(password) do
-    # The consumer_token and authorize requests have to go out unsigned, and
-    # build_request/5 falls back to the client's credentials, so without this a
-    # client that had logged in before could never log in again.
-    client = %__MODULE__{client | consumer: nil, token: nil}
-
     with {:ok, {consumer, token}} <- OAuth.login(client, email, password) do
       {:ok, %__MODULE__{client | token: token, consumer: consumer}}
+    end
+  end
+
+  @doc """
+  Obtains a new access token for a client that is already signed in.
+
+  Reuses the consumer registered by `login/3` rather than registering another
+  one, which is what the API asks for: it rate limits `consumer_token`
+  requests and answers with `429 Too Many Requests: ... Please reuse tokens!`
+  once a client registers too often.
+
+  Prefer this over calling `login/3` again when an access token expires. A
+  long-running application that signs in once and refreshes on every `401`
+  registers a single consumer for its lifetime.
+
+  ## Examples
+
+      iex> {:ok, client} = Discovergy.Client.refresh(client, email, password)
+      {:ok, %Discovergy.Client{}}
+
+  """
+  @spec refresh(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
+  def refresh(%__MODULE__{consumer: nil}, email, password)
+      when is_binary(email) and is_binary(password) do
+    {:error, %Error{reason: :not_logged_in}}
+  end
+
+  def refresh(%__MODULE__{consumer: consumer} = client, email, password)
+      when is_binary(email) and is_binary(password) do
+    with {:ok, token} <- OAuth.refresh(client, consumer, email, password) do
+      {:ok, %__MODULE__{client | token: token}}
     end
   end
 
@@ -103,8 +129,8 @@ defmodule Discovergy.Client do
 
   defp build_request(%__MODULE__{} = client, method, path, body, opts) do
     query = opts[:query] || []
-    consumer = opts[:consumer] || client.consumer
-    token = opts[:token] || client.token
+    consumer = Keyword.get(opts, :consumer, client.consumer)
+    token = Keyword.get(opts, :token, client.token)
 
     request = %{
       method: method,
