@@ -6,6 +6,16 @@
 
 - Remove `Discovergy.Measurements.get_raw_load_profile/3`. The `/raw_load_profile` endpoint no longer exists and the API returns a 404 for every request, so the function could not succeed.
 - Require Elixir 1.15. The `finch`, `mint` and `hpax` releases carrying the fixes for [CVE-2026-58226](https://osv.dev/vulnerability/EEF-CVE-2026-58226), [CVE-2026-49754](https://osv.dev/vulnerability/EEF-CVE-2026-49754) and [CVE-2026-48862](https://osv.dev/vulnerability/EEF-CVE-2026-48862) no longer compile on older versions.
+- Take the end of the interval as a `:to` option rather than a positional argument in `Discovergy.Measurements.get_readings/4`, `Discovergy.Measurements.get_statistics/4` and `Discovergy.Disaggregation.get_energy_by_device_measurements/4`. The API treats it as optional, and the old signature made it the fourth of five arguments, so reaching the options meant passing `nil` for it. `get_activities/4` and `get_load_profile/5` are unchanged, because the API requires both ends there.
+
+  ```diff
+  - Discovergy.Measurements.get_readings(client, meter_id, from, to, resolution: :one_day)
+  + Discovergy.Measurements.get_readings(client, meter_id, from, to: to, resolution: :one_day)
+
+  - Discovergy.Measurements.get_statistics(client, meter_id, from, nil, fields: [:energy])
+  + Discovergy.Measurements.get_statistics(client, meter_id, from, fields: [:energy])
+  ```
+
 - `Discovergy.WebsiteAccessCode.generate/2` returns the access code as the API sends it. It used to be decoded as a query string, and the first key of the resulting map was returned as the code.
 - An unsuccessful response with an empty body is reported as `{:http_error, status}` instead of `:unknown`, which rendered as `":unknown"`.
 

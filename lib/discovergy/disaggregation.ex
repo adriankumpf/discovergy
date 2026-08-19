@@ -11,6 +11,10 @@ defmodule Discovergy.Disaggregation do
 
   The API rejects intervals longer than one week with a `400`.
 
+  ## Options
+
+    * `:to` - end of the interval. Left to the API if omitted.
+
   ## Examples
 
       iex> Discovergy.Disaggregation.get_energy_by_device_measurements(
@@ -38,14 +42,11 @@ defmodule Discovergy.Disaggregation do
       ]}
 
   """
-  @spec get_energy_by_device_measurements(
-          Client.t(),
-          Meter.id(),
-          DateTime.t(),
-          DateTime.t() | nil
-        ) ::
+  @spec get_energy_by_device_measurements(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, [EnergyByDeviceMeasurement.t()]} | {:error, Error.t()}
-  def get_energy_by_device_measurements(%Client{} = client, meter_id, from, to \\ nil) do
+  def get_energy_by_device_measurements(%Client{} = client, meter_id, from, opts \\ []) do
+    to = opts[:to]
+
     parameters = [
       meterId: meter_id,
       from: DateTime.to_unix(from, :millisecond),

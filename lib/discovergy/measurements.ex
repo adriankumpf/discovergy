@@ -27,6 +27,7 @@ defmodule Discovergy.Measurements do
 
   ## Options
 
+    * `:to` - end of the interval. Left to the API if omitted.
     * `:fields` - list of measurement fields to return in the result (use
     `Discovergy.Metadata.get_field_names/2` to get all available fields)
     * `:resolution` - time distance between returned readings, see
@@ -38,8 +39,8 @@ defmodule Discovergy.Measurements do
 
   ## Examples
 
-      iex> Discovergy.Measurements.get_readings(client, meter_id, from, to,
-      ...>                                  resolution: :one_month)
+      iex> Discovergy.Measurements.get_readings(client, meter_id, from,
+      ...>                                  to: to, resolution: :one_month)
       {:ok, [
        %Discovergy.Measurement{
          time: ~U[2019-07-16 22:00:00.000Z],
@@ -63,9 +64,11 @@ defmodule Discovergy.Measurements do
       ]}
 
   """
-  @spec get_readings(Client.t(), Meter.id(), DateTime.t(), DateTime.t() | nil, Keyword.t()) ::
+  @spec get_readings(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, [Measurement.t()]} | {:error, Error.t()}
-  def get_readings(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
+  def get_readings(%Client{} = client, meter_id, from, opts \\ []) do
+    to = opts[:to]
+
     parameters = [
       meterId: meter_id,
       from: DateTime.to_unix(from, :millisecond),
@@ -126,6 +129,7 @@ defmodule Discovergy.Measurements do
 
   ## Options
 
+    * `:to` - end of the interval. Left to the API if omitted.
     * `:fields` - list of measurement fields to return in the result (use
     `Discovergy.Metadata.get_field_names/2` to get all available fields)
 
@@ -166,9 +170,11 @@ defmodule Discovergy.Measurements do
         }
       }}
   """
-  @spec get_statistics(Client.t(), Meter.id(), DateTime.t(), DateTime.t() | nil, Keyword.t()) ::
+  @spec get_statistics(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, map()} | {:error, Error.t()}
-  def get_statistics(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
+  def get_statistics(%Client{} = client, meter_id, from, opts \\ []) do
+    to = opts[:to]
+
     parameters = [
       meterId: meter_id,
       from: DateTime.to_unix(from, :millisecond),

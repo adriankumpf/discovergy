@@ -83,7 +83,7 @@ defmodule Discovergy.DisaggregationTest do
                client,
                "$meter_id",
                ~U[2020-07-01 00:00:00Z],
-               ~U[2020-07-02 00:00:00Z]
+               to: ~U[2020-07-02 00:00:00Z]
              )
   end
 

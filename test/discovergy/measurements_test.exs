@@ -95,11 +95,8 @@ defmodule Discovergy.MeasurementsTest do
                 }
               }
             ]} ==
-             Discovergy.Measurements.get_readings(
-               client,
-               "$meter_id",
-               ~U[2020-07-01 00:00:00Z],
-               ~U[2020-07-01 00:10:00Z]
+             Discovergy.Measurements.get_readings(client, "$meter_id", ~U[2020-07-01 00:00:00Z],
+               to: ~U[2020-07-01 00:10:00Z]
              )
   end
 
@@ -170,11 +167,7 @@ defmodule Discovergy.MeasurementsTest do
     end)
 
     assert {:ok, statistics} ==
-             Discovergy.Measurements.get_statistics(
-               client,
-               "$meter_id",
-               ~U[2020-07-01 00:00:00Z],
-               nil,
+             Discovergy.Measurements.get_statistics(client, "$meter_id", ~U[2020-07-01 00:00:00Z],
                fields: [:voltage1, :voltage2, :voltage3]
              )
   end
