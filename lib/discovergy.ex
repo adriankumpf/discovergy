@@ -8,7 +8,7 @@ defmodule Discovergy do
   Create a `Discovergy.Client` and authenticate with the Discovergy API using your email address and password.
 
       iex> {:ok, client} = Discovergy.Client.new() |> Discovergy.Client.login(email, password)
-      {:ok, %Discovergy.Client{}}
+      {:ok, #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>}
 
   Then pass the `client` to the respective endpoint function. For example, to list all meters the user has access to:
 
@@ -65,7 +65,7 @@ defmodule Discovergy do
   The main way to configure Discovergy is through the options passed to `Discovergy.Client.new/1`.
 
   To customize the behaviour of the HTTP client used by Discovergy, you can configure Discovergy
-  through the application environment . For example, you can do this in `config/runtime.exs`:
+  through the application environment. For example, you can do this in `config/runtime.exs`:
 
       # config/runtime.exs
       config :discovergy,

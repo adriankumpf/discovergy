@@ -114,8 +114,9 @@ defmodule Discovergy.OAuthTest do
     end)
   end
 
+  # Replies to each of the four steps of the flow. A step that sends something
+  # other than what it should falls through and raises CaseClauseError.
   defp full_authorization(response) do
-    # Test body
     case {response.method, response.url, response.body} do
       {:post, "https://api.inexogy.com/public/v1/oauth1/consumer_token", "client=DiscoX"} ->
         json(%{key: "$key", secret: "$secret", owner: "$client_id", attributes: %{}})

@@ -25,7 +25,7 @@ Create a `Discovergy.Client` and authenticate with the Discovergy API using your
 
 ```elixir
 iex> {:ok, client} = Discovergy.Client.new() |> Discovergy.Client.login(email, password)
-{:ok, %Discovergy.Client{}}
+{:ok, #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>}
 ```
 
 Access tokens expire. To get a new one, use `Discovergy.Client.reauthorize/3` rather than logging in again, so the consumer registered by `login/3` is reused:

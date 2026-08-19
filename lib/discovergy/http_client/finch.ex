@@ -2,7 +2,7 @@ defmodule Discovergy.HTTPClient.Finch do
   @moduledoc """
   The built-in HTTP client, based on [finch](https://github.com/sneako/finch).
 
-  It client implements the `Discovergy.HTTPClient` behaviour.
+  It implements the `Discovergy.HTTPClient` behaviour.
 
   See `Discovergy` for the available configuration options and `Discovergy.HTTPClient` if you wish
   to use another HTTP client.

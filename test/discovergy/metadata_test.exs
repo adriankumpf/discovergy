@@ -1,5 +1,7 @@
 defmodule Discovergy.MetadataTest do
-  use Discovergy.Case, logged_in: true, async: true
+  use Discovergy.Case, async: true
+
+  @moduletag :logged_in
 
   test "gets devices", %{client: client} do
     mock(fn
@@ -75,6 +77,26 @@ defmodule Discovergy.MetadataTest do
                 voltage_scaling_factor: 1
               }
             ]} == Discovergy.Metadata.get_meters(client)
+  end
+
+  test "ignores fields the client does not know", %{client: client} do
+    mock(fn %{url: "https://api.inexogy.com/public/v1/meters"} ->
+      json([%{meterId: "$meter_id", somethingAddedLater: "surprise"}])
+    end)
+
+    assert {:ok, [%Discovergy.Meter{meter_id: "$meter_id"}]} =
+             Discovergy.Metadata.get_meters(client)
+
+    # Decoding a response must not create atoms.
+    assert_raise ArgumentError, fn -> String.to_existing_atom("something_added_later") end
+  end
+
+  test "keeps a null field as nil", %{client: client} do
+    mock(fn %{url: "https://api.inexogy.com/public/v1/meters"} ->
+      json([%{meterId: "$meter_id", location: nil}])
+    end)
+
+    assert {:ok, [%Discovergy.Meter{location: nil}]} = Discovergy.Metadata.get_meters(client)
   end
 
   test "gets field names", %{client: client} do

@@ -1,5 +1,7 @@
 defmodule Discovergy.VirtualMetersTest do
-  use Discovergy.Case, logged_in: true, async: true
+  use Discovergy.Case, async: true
+
+  @moduletag :logged_in
 
   test "gets virtual meter", %{client: client} do
     mock(fn
@@ -72,7 +74,26 @@ defmodule Discovergy.VirtualMetersTest do
              Discovergy.VirtualMeters.get_virtual_meter(client, "$meter_id")
   end
 
-  # TODO
-  # test "creates a virtual meter", %{client: client} do
-  # end
+  test "creates a virtual meter", %{client: client} do
+    mock(fn
+      %{
+        method: :post,
+        url: "https://api.inexogy.com/public/v1/virtual_meter",
+        query: [meterIdsPlus: "$one,$two", meterIdsMinus: "$three"]
+      } ->
+        json(%{meterId: "$virtual_meter_id", type: "VIRTUAL_ELECTRICITY"})
+    end)
+
+    assert {:ok, %Discovergy.Meter{meter_id: "$virtual_meter_id", type: "VIRTUAL_ELECTRICITY"}} =
+             Discovergy.VirtualMeters.create_virtual_meter(client, ["$one", "$two"], ["$three"])
+  end
+
+  test "omits the subtracted meters if there are none", %{client: client} do
+    mock(fn %{method: :post, query: [meterIdsPlus: "$one"]} ->
+      json(%{meterId: "$virtual_meter_id"})
+    end)
+
+    assert {:ok, %Discovergy.Meter{}} =
+             Discovergy.VirtualMeters.create_virtual_meter(client, ["$one"])
+  end
 end

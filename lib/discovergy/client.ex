@@ -10,16 +10,25 @@ defmodule Discovergy.Client do
   work around.
   """
 
-  alias Discovergy.{Config, OAuth, Error}
+  alias Discovergy.{Config, Error, OAuth}
 
+  @base_url "https://api.inexogy.com/public/v1"
   @user_agent "github.com/adriankumpf/discovergy"
+  @form_urlencoded "application/x-www-form-urlencoded"
 
-  @opaque t :: %__MODULE__{}
+  @opaque t :: %__MODULE__{
+            base_url: String.t(),
+            http_client: module,
+            consumer: OAuth.Consumer.t() | nil,
+            token: OAuth.Token.t() | nil
+          }
+
+  # The client carries the OAuth secrets of the session. Keep them out of
+  # logs, crash reports and iex output.
+  @derive {Inspect, only: [:base_url]}
 
   @enforce_keys [:base_url, :http_client]
   defstruct [:base_url, :http_client, :consumer, :token]
-
-  @base_url "https://api.inexogy.com/public/v1"
 
   @doc """
   Creates a new Discovergy API client.
@@ -27,11 +36,13 @@ defmodule Discovergy.Client do
   ## Options
 
   - `:base_url` - the base URL for all endpoints (default: `#{@base_url}`)
+  - `:http_client` - a module implementing the `Discovergy.HTTPClient`
+    behaviour (default: the `:client` application environment setting)
 
   ## Examples
 
-      iex> client = Discovergy.Client.new()
-      %Discovergy.Client{}
+      iex> Discovergy.Client.new()
+      #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>
 
   """
   @spec new(Keyword.t()) :: t
@@ -52,7 +63,7 @@ defmodule Discovergy.Client do
 
       iex> {:ok, client} = Discovergy.Client.new()
       ...>                 |> Discovergy.Client.login(email, password)
-      {:ok, %Discovergy.Client{}}
+      {:ok, #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>}
 
   """
   @spec login(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
@@ -98,66 +109,44 @@ defmodule Discovergy.Client do
   end
 
   @doc false
-  @spec get(t(), String.t(), Keyword.t()) :: {:ok, any()} | {:error, Error.t()}
+  @spec get(t(), String.t(), Keyword.t()) :: {:ok, term} | {:error, Error.t()}
   def get(%__MODULE__{} = client, path, opts \\ []) do
     request(client, :get, path, [], opts)
   end
 
   @doc false
-  @spec post(t(), String.t(), Keyword.t(), Keyword.t()) :: {:ok, any()} | {:error, Error.t()}
+  @spec post(t(), String.t(), Keyword.t(), Keyword.t()) :: {:ok, term} | {:error, Error.t()}
   def post(%__MODULE__{} = client, path, body, opts \\ []) do
     request(client, :post, path, body, opts)
   end
 
   defp request(%__MODULE__{} = client, method, path, body, opts) do
-    request = build_request(client, method, path, body, opts)
-    run_request(client, request)
-  end
-
-  defp run_request(%__MODULE__{http_client: http_client}, request) do
-    case http_client.request(
-           request.method,
-           request.url,
-           request.headers,
-           request.body,
-           request.req_opts
-         ) do
-      {:ok, 200, headers, body} ->
-        {:ok, maybe_decode_body(headers, body)}
-
-      {:ok, status, headers, body}
-      when is_binary(body) and body != "" ->
-        {:error, %Error{reason: body, response: {status, headers, body}}}
-
-      {:ok, status, headers, body} ->
-        {:error, %Error{reason: :unknown, response: {status, headers, body}}}
-
-      {:error, reason} ->
-        {:error, %Error{reason: reason}}
-    end
-  end
-
-  defp build_request(%__MODULE__{} = client, method, path, body, opts) do
-    query = opts[:query] || []
+    url = build_url(client.base_url, path, opts[:query] || [])
     consumer = Keyword.get(opts, :consumer, client.consumer)
     token = Keyword.get(opts, :token, client.token)
 
-    request = %{
-      method: method,
-      url: build_url(client.base_url, path, query),
-      headers: [{"user-agent", @user_agent}],
-      body: body,
-      req_opts: Config.client_request_opts()
-    }
+    headers =
+      sign(method, url, body, consumer, token) ++
+        [{"user-agent", @user_agent} | content_type(method)]
 
-    request
-    |> sign(consumer, token)
-    |> encode_body()
+    client.http_client.request(
+      method,
+      url,
+      headers,
+      URI.encode_query(body),
+      Config.client_request_opts()
+    )
+    |> handle_response()
   end
 
-  defp sign(request, nil, _token), do: request
+  # The API takes its parameters in the query string throughout; only the OAuth
+  # endpoints have a body at all, and it is form encoded.
+  defp content_type(:post), do: [{"content-type", @form_urlencoded}]
+  defp content_type(_method), do: []
 
-  defp sign(request, consumer, token) do
+  defp sign(_method, _url, _body, nil = _consumer, _token), do: []
+
+  defp sign(method, url, body, consumer, token) do
     credentials =
       OAuther.credentials(
         consumer_key: consumer.key,
@@ -166,18 +155,19 @@ defmodule Discovergy.Client do
         token_secret: token && token.oauth_token_secret
       )
 
-    {authorization_header, _req_params} =
-      OAuther.sign(to_string(request.method), request.url, request.body, credentials)
-      |> OAuther.header()
+    {header, _req_params} =
+      OAuther.sign(to_string(method), url, body, credentials) |> OAuther.header()
 
-    update_in(request.headers, &[authorization_header | &1])
+    [header]
   end
 
+  # Optional parameters are passed as nil rather than dropped at every call
+  # site, because the API rejects the ones it does not expect to be empty.
   defp build_url(base_url, path, params) do
     query =
-      case params do
+      case Enum.reject(params, &match?({_key, nil}, &1)) do
         [] -> nil
-        _ -> URI.encode_query(params)
+        params -> URI.encode_query(params)
       end
 
     base_url
@@ -187,42 +177,42 @@ defmodule Discovergy.Client do
     |> URI.to_string()
   end
 
-  defp encode_body(%{body: body} = request) when not is_nil(body) do
-    content_type = {"content-type", "application/x-www-form-urlencoded"}
-
-    request
-    |> Map.update!(:headers, &[content_type | &1])
-    |> Map.put(:body, URI.encode_query(body))
-  end
-
-  defp encode_body(request), do: request
-
-  defp maybe_decode_body(headers, body) do
-    cond do
-      decodable_body?(body) and decodable_url_encoded_content_type?(headers) ->
-        URI.decode_query(body)
-
-      decodable_body?(body) and decodable_json_content_type?(headers) ->
-        Jason.decode!(body)
-
-      true ->
-        body
+  defp handle_response({:ok, status, headers, body}) when status in 200..299 do
+    case decode(headers, body) do
+      {:ok, data} -> {:ok, data}
+      {:error, reason} -> {:error, %Error{reason: reason, response: {status, headers, body}}}
     end
   end
 
-  defp decodable_body?(body), do: is_binary(body) and body != ""
+  defp handle_response({:ok, status, headers, body}) do
+    {:error, %Error{reason: reason(status, body), response: {status, headers, body}}}
+  end
 
-  defp decodable_url_encoded_content_type?(headers) do
-    case List.keyfind(headers, "content-type", 0) do
-      {_, "application/x-www-form-urlencoded"} -> true
-      _ -> false
+  defp handle_response({:error, reason}) do
+    {:error, %Error{reason: reason}}
+  end
+
+  # Everything but the OAuth endpoints replies with JSON. Those reply with a
+  # form-encoded body, which the callers decode themselves, because only they
+  # know whether the body is a set of parameters or a bare value.
+  defp decode(headers, body) do
+    if body != "" and json?(headers) do
+      Jason.decode(body)
+    else
+      {:ok, body}
     end
   end
 
-  defp decodable_json_content_type?(headers) do
-    case List.keyfind(headers, "content-type", 0) do
-      {_, "application/json"} -> true
-      _ -> false
-    end
+  defp json?(headers) do
+    Enum.any?(headers, fn {name, value} ->
+      String.downcase(name) == "content-type" and media_type(value) == "application/json"
+    end)
   end
+
+  defp media_type(content_type) do
+    content_type |> String.split(";", parts: 2) |> hd() |> String.trim() |> String.downcase()
+  end
+
+  defp reason(_status, body) when is_binary(body) and body != "", do: body
+  defp reason(status, _body), do: {:http_error, status}
 end

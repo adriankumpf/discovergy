@@ -1,5 +1,7 @@
 defmodule Discovergy.MeasurementsTest do
-  use Discovergy.Case, logged_in: true, async: true
+  use Discovergy.Case, async: true
+
+  @moduletag :logged_in
 
   test "gets readings", %{client: client} do
     mock(fn
@@ -93,12 +95,17 @@ defmodule Discovergy.MeasurementsTest do
                 }
               }
             ]} ==
-             Discovergy.Measurements.get_readings(
-               client,
-               "$meter_id",
-               ~U[2020-07-01 00:00:00Z],
-               ~U[2020-07-01 00:10:00Z]
+             Discovergy.Measurements.get_readings(client, "$meter_id", ~U[2020-07-01 00:00:00Z],
+               to: ~U[2020-07-01 00:10:00Z]
              )
+  end
+
+  test "rejects an unknown option", %{client: client} do
+    assert_raise ArgumentError, ~r/unknown keys \[:resolutions\]/, fn ->
+      Discovergy.Measurements.get_readings(client, "$meter_id", ~U[2020-07-01 00:00:00Z],
+        resolutions: :one_day
+      )
+    end
   end
 
   test "gets last reading", %{client: client} do
@@ -168,11 +175,7 @@ defmodule Discovergy.MeasurementsTest do
     end)
 
     assert {:ok, statistics} ==
-             Discovergy.Measurements.get_statistics(
-               client,
-               "$meter_id",
-               ~U[2020-07-01 00:00:00Z],
-               nil,
+             Discovergy.Measurements.get_statistics(client, "$meter_id", ~U[2020-07-01 00:00:00Z],
                fields: [:voltage1, :voltage2, :voltage3]
              )
   end

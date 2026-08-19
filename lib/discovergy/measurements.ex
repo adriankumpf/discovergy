@@ -3,28 +3,44 @@ defmodule Discovergy.Measurements do
   The Measurements endpoint
   """
 
-  alias Discovergy.Client
-  alias Discovergy.Measurement
+  alias Discovergy.{Client, Error, Measurement, Meter}
+
+  @typedoc """
+  The time distance between returned readings.
+
+  The API caps the interval that can be requested at each resolution: one day
+  for `:raw`, ten days for `:three_minutes`, 31 days for `:fifteen_minutes`,
+  93 days for `:one_hour` and ten years or more above that.
+  """
+  @type resolution ::
+          :raw
+          | :three_minutes
+          | :fifteen_minutes
+          | :one_hour
+          | :one_day
+          | :one_week
+          | :one_month
+          | :one_year
 
   @doc """
   Return the measurements for the specified meter in the specified time interval.
 
   ## Options
 
+    * `:to` - end of the interval. Left to the API if omitted.
     * `:fields` - list of measurement fields to return in the result (use
     `Discovergy.Metadata.get_field_names/2` to get all available fields)
-    * `:resolution` - time distance between returned readings. Possible values:
-    `:raw` (default), `:three_minutes`, `:fifteen_minutes`, `:one_hour`, `:one_day`,
-    `:one_week`, `:one_month`, `:one_year`
-    * `: disaggregation ` - Include load disaggregation as pseudo-measurement
+    * `:resolution` - time distance between returned readings, see
+    `t:resolution/0` (default: `:raw`)
+    * `:disaggregation` - Include load disaggregation as pseudo-measurement
     fields, if available. Only applies if raw resolution is selected
     * `:each` - Return data from the virtual meter itself (false) or all its
     sub-meters (true). Only applies if meterId refers to a virtual meter
 
   ## Examples
 
-      iex> Discovergy.Measurements.get_readings(client, meter_id, from, to,
-      ...>                                  resolution: :one_month)
+      iex> Discovergy.Measurements.get_readings(client, meter_id, from,
+      ...>                                  to: to, resolution: :one_month)
       {:ok, [
        %Discovergy.Measurement{
          time: ~U[2019-07-16 22:00:00.000Z],
@@ -48,20 +64,21 @@ defmodule Discovergy.Measurements do
       ]}
 
   """
-  @spec get_readings(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
+  @spec get_readings(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, [Measurement.t()]} | {:error, Error.t()}
-  def get_readings(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
-    parameters =
-      [
-        meterId: meter_id,
-        from: DateTime.to_unix(from, :millisecond),
-        to: to && DateTime.to_unix(to, :millisecond),
-        fields: Enum.join(opts[:fields] || [], ","),
-        resolution: opts[:resolution],
-        disaggregation: opts[:disaggregation],
-        each: opts[:each]
-      ]
-      |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
+  def get_readings(%Client{} = client, meter_id, from, opts \\ []) do
+    opts = Keyword.validate!(opts, [:to, :fields, :resolution, :disaggregation, :each])
+    to = opts[:to]
+
+    parameters = [
+      meterId: meter_id,
+      from: DateTime.to_unix(from, :millisecond),
+      to: to && DateTime.to_unix(to, :millisecond),
+      fields: fields(opts[:fields]),
+      resolution: opts[:resolution],
+      disaggregation: opts[:disaggregation],
+      each: opts[:each]
+    ]
 
     with {:ok, measurements} <- Client.get(client, "/readings", query: parameters) do
       {:ok, Enum.map(measurements, &Measurement.into/1)}
@@ -100,13 +117,9 @@ defmodule Discovergy.Measurements do
   @spec get_last_reading(Client.t(), Meter.id(), Keyword.t()) ::
           {:ok, Measurement.t()} | {:error, Error.t()}
   def get_last_reading(%Client{} = client, meter_id, opts \\ []) do
-    parameters =
-      [
-        meterId: meter_id,
-        fields: Enum.join(opts[:fields] || [], ","),
-        each: opts[:each]
-      ]
-      |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
+    opts = Keyword.validate!(opts, [:fields, :each])
+
+    parameters = [meterId: meter_id, fields: fields(opts[:fields]), each: opts[:each]]
 
     with {:ok, measurement} <- Client.get(client, "/last_reading", query: parameters) do
       {:ok, Measurement.into(measurement)}
@@ -119,6 +132,7 @@ defmodule Discovergy.Measurements do
 
   ## Options
 
+    * `:to` - end of the interval. Left to the API if omitted.
     * `:fields` - list of measurement fields to return in the result (use
     `Discovergy.Metadata.get_field_names/2` to get all available fields)
 
@@ -159,17 +173,18 @@ defmodule Discovergy.Measurements do
         }
       }}
   """
-  @spec get_statistics(Client.t(), Meter.id(), DateTime.t(), DateTime.t(), Keyword.t()) ::
+  @spec get_statistics(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, map()} | {:error, Error.t()}
-  def get_statistics(%Client{} = client, meter_id, from, to \\ nil, opts \\ []) do
-    parameters =
-      [
-        meterId: meter_id,
-        from: DateTime.to_unix(from, :millisecond),
-        to: to && DateTime.to_unix(to, :millisecond),
-        fields: Enum.join(opts[:fields] || [], ",")
-      ]
-      |> Enum.reject(fn {_, v} -> v in [nil, ""] end)
+  def get_statistics(%Client{} = client, meter_id, from, opts \\ []) do
+    opts = Keyword.validate!(opts, [:to, :fields])
+    to = opts[:to]
+
+    parameters = [
+      meterId: meter_id,
+      from: DateTime.to_unix(from, :millisecond),
+      to: to && DateTime.to_unix(to, :millisecond),
+      fields: fields(opts[:fields])
+    ]
 
     Client.get(client, "/statistics", query: parameters)
   end
@@ -209,22 +224,26 @@ defmodule Discovergy.Measurements do
   @spec get_load_profile(Client.t(), Meter.id(), Date.t(), Date.t(), Keyword.t()) ::
           {:ok, [map]} | {:error, Error.t()}
   def get_load_profile(%Client{} = client, meter_id, from, to, opts \\ []) do
+    opts = Keyword.validate!(opts, [:resolution])
+
     {from_year, from_month, from_day} = Date.to_erl(from)
     {to_year, to_month, to_day} = Date.to_erl(to)
 
-    parameters =
-      [
-        meterId: meter_id,
-        fromYear: from_year,
-        fromMonth: from_month,
-        fromDay: from_day,
-        toYear: to_year,
-        toMonth: to_month,
-        toDay: to_day,
-        resolution: opts[:resolution]
-      ]
-      |> Enum.reject(&match?({_, nil}, &1))
+    parameters = [
+      meterId: meter_id,
+      fromYear: from_year,
+      fromMonth: from_month,
+      fromDay: from_day,
+      toYear: to_year,
+      toMonth: to_month,
+      toDay: to_day,
+      resolution: opts[:resolution]
+    ]
 
     Client.get(client, "/load_profile", query: parameters)
   end
+
+  defp fields(nil), do: nil
+  defp fields([]), do: nil
+  defp fields(fields), do: Enum.join(fields, ",")
 end

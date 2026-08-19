@@ -3,14 +3,17 @@ defmodule Discovergy.Disaggregation do
   The Disaggregation endpoint
   """
 
-  alias Discovergy.Client
-  alias Discovergy.{DisaggregationActivity, EnergyByDeviceMeasurement}
+  alias Discovergy.{Client, DisaggregationActivity, EnergyByDeviceMeasurement, Error, Meter}
 
   @doc """
   Provides the disaggregated energy for the specified meter at 15 minute
   intervals.
 
   The API rejects intervals longer than one week with a `400`.
+
+  ## Options
+
+    * `:to` - end of the interval. Left to the API if omitted.
 
   ## Examples
 
@@ -39,22 +42,23 @@ defmodule Discovergy.Disaggregation do
       ]}
 
   """
-  @spec get_energy_by_device_measurements(Client.t(), Meter.id(), DateTime.t(), DateTime.t()) ::
+  @spec get_energy_by_device_measurements(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, [EnergyByDeviceMeasurement.t()]} | {:error, Error.t()}
-  def get_energy_by_device_measurements(%Client{} = client, meter_id, from, to \\ nil) do
-    parameters =
-      [
-        meterId: meter_id,
-        from: DateTime.to_unix(from, :millisecond),
-        to: to && DateTime.to_unix(to, :millisecond)
-      ]
-      |> Enum.reject(&match?({_, nil}, &1))
+  def get_energy_by_device_measurements(%Client{} = client, meter_id, from, opts \\ []) do
+    opts = Keyword.validate!(opts, [:to])
+    to = opts[:to]
+
+    parameters = [
+      meterId: meter_id,
+      from: DateTime.to_unix(from, :millisecond),
+      to: to && DateTime.to_unix(to, :millisecond)
+    ]
 
     with {:ok, disaggregation} <- Client.get(client, "/disaggregation", query: parameters) do
       measurements =
         disaggregation
         |> Enum.map(&EnergyByDeviceMeasurement.into/1)
-        |> Enum.sort_by(& &1.time, Date)
+        |> Enum.sort_by(& &1.time, DateTime)
 
       {:ok, measurements}
     end
