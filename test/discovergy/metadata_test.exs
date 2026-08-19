@@ -91,6 +91,14 @@ defmodule Discovergy.MetadataTest do
     assert_raise ArgumentError, fn -> String.to_existing_atom("something_added_later") end
   end
 
+  test "keeps a null field as nil", %{client: client} do
+    mock(fn %{url: "https://api.inexogy.com/public/v1/meters"} ->
+      json([%{meterId: "$meter_id", location: nil}])
+    end)
+
+    assert {:ok, [%Discovergy.Meter{location: nil}]} = Discovergy.Metadata.get_meters(client)
+  end
+
   test "gets field names", %{client: client} do
     mock(fn
       %{url: "https://api.inexogy.com/public/v1/field_names", query: [meterId: "$meter_id"]} ->

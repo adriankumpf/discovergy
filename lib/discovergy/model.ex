@@ -27,6 +27,10 @@ defmodule Discovergy.Model do
     struct(module, Enum.map(attrs, &cast_field(&1, opts)))
   end
 
+  # A field the API sends as null stays nil rather than being handed to a cast
+  # that expects a timestamp or an object.
+  defp cast_field({key, nil}, opts), do: {field(key, opts[:rename]), nil}
+
   defp cast_field({key, value}, opts) do
     cast = Map.get(opts[:cast], key, & &1)
     {field(key, opts[:rename]), cast.(value)}
