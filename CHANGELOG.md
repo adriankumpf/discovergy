@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Breaking Changes
+
+- Require Elixir 1.15. The `finch`, `mint` and `hpax` releases carrying the fixes for [CVE-2026-58226](https://osv.dev/vulnerability/EEF-CVE-2026-58226), [CVE-2026-49754](https://osv.dev/vulnerability/EEF-CVE-2026-49754) and [CVE-2026-48862](https://osv.dev/vulnerability/EEF-CVE-2026-48862) no longer compile on older versions.
+
+### Bug Fixes
+
+- Fix `Discovergy.Client.login/3` failing on a client that had already logged in. The consumer of the previous session was kept and used to sign the two requests that open the OAuth flow, which have to go out unsigned, so the API rejected them.
+
+### Changes
+
+- Bump dependencies
+
 ## v0.7.0 (2025-09-07)
 
 - Use inexogy domain

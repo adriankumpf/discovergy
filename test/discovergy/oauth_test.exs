@@ -39,6 +39,28 @@ defmodule Discovergy.OAuthTest do
     assert new_consumer != consumer
   end
 
+  @tag :logged_in
+  test "signs in again without the credentials of the previous session", %{client: client} do
+    test_pid = self()
+
+    mock(fn response ->
+      send(test_pid, {URI.parse(response.url).path, authorization(response.headers)})
+      full_authorization(response)
+    end)
+
+    assert {:ok, %Discovergy.Client{}} = Discovergy.Client.login(client, "$email", "$password")
+
+    # These two open the flow, so there is nothing to sign them with yet.
+    assert_receive {"/public/v1/oauth1/consumer_token", nil}
+    assert_receive {"/public/v1/oauth1/authorize", nil}
+  end
+
+  defp authorization(headers) do
+    Enum.find_value(headers, fn {key, value} ->
+      if String.downcase(key) == "authorization", do: value
+    end)
+  end
+
   defp full_authorization(response) do
     # Test body
     case {response.method, response.url, response.body} do

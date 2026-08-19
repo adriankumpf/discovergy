@@ -51,7 +51,10 @@ defmodule Discovergy.Client do
   @spec login(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
   def login(%__MODULE__{} = client, email, password)
       when is_binary(email) and is_binary(password) do
-    client = put_in(client.token, nil)
+    # The consumer_token and authorize requests have to go out unsigned, and
+    # build_request/5 falls back to the client's credentials, so without this a
+    # client that had logged in before could never log in again.
+    client = %__MODULE__{client | consumer: nil, token: nil}
 
     with {:ok, {consumer, token}} <- OAuth.login(client, email, password) do
       {:ok, %__MODULE__{client | token: token, consumer: consumer}}
@@ -143,26 +146,9 @@ defmodule Discovergy.Client do
 
     base_url
     |> URI.parse()
-    |> append_path(path)
+    |> URI.append_path(path)
     |> Map.put(:query, query)
     |> URI.to_string()
-  end
-
-  # Replace with `URI.append_path/2` once Elixir 1.15 is required
-  defp append_path(%URI{}, "//" <> _ = path) do
-    raise ArgumentError, ~s|path cannot start with "//", got: #{inspect(path)}|
-  end
-
-  defp append_path(%URI{path: path} = uri, "/" <> rest = all) do
-    cond do
-      path == nil -> %{uri | path: all}
-      path != "" and :binary.last(path) == ?/ -> %{uri | path: path <> rest}
-      true -> %{uri | path: path <> all}
-    end
-  end
-
-  defp append_path(%URI{}, path) when is_binary(path) do
-    raise ArgumentError, ~s|path must start with "/", got: #{inspect(path)}|
   end
 
   defp encode_body(%{body: body} = request) when not is_nil(body) do
