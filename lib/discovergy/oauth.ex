@@ -91,9 +91,9 @@ defmodule Discovergy.OAuth do
   """
   @spec get_request_token(Client.t(), Consumer.t()) :: {:ok, Token.t()} | {:error, Error.t()}
   def get_request_token(%Client{} = client, %Consumer{} = consumer) do
-    with {:ok, request_token} <-
+    with {:ok, body} <-
            Client.post(client, "/oauth1/request_token", [], consumer: consumer, token: nil) do
-      {:ok, Token.into(request_token)}
+      {:ok, Token.into(URI.decode_query(body))}
     end
   end
 
@@ -109,8 +109,8 @@ defmodule Discovergy.OAuth do
 
     opts = [query: query, consumer: nil, token: nil]
 
-    with {:ok, grant} <- Client.get(client, "/oauth1/authorize", opts) do
-      {:ok, Grant.into(grant)}
+    with {:ok, body} <- Client.get(client, "/oauth1/authorize", opts) do
+      {:ok, Grant.into(URI.decode_query(body))}
     end
   end
 
@@ -125,8 +125,8 @@ defmodule Discovergy.OAuth do
     body = [{"oauth_verifier", grant.oauth_verifier}]
     opts = [consumer: consumer, token: request_token]
 
-    with {:ok, access_token} <- Client.post(client, "/oauth1/access_token", body, opts) do
-      {:ok, Token.into(access_token)}
+    with {:ok, response} <- Client.post(client, "/oauth1/access_token", body, opts) do
+      {:ok, Token.into(URI.decode_query(response))}
     end
   end
 end

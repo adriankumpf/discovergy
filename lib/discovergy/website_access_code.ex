@@ -31,8 +31,6 @@ defmodule Discovergy.WebsiteAccessCode do
   """
   @spec generate(Client.t(), String.t()) :: {:ok, String.t()} | {:error, Error.t()}
   def generate(%Client{} = client, email) do
-    with {:ok, code} <- Client.get(client, "/website_access_code", query: [email: email]) do
-      {:ok, code |> Map.keys() |> List.first()}
-    end
+    Client.get(client, "/website_access_code", query: [email: email])
   end
 end

@@ -58,10 +58,14 @@ defmodule Discovergy.Case do
   end
 
   def json(data) do
-    {:ok, 200, [{"content-type", "application/json"}], Jason.encode!(data)}
+    {:ok, 200, [{"content-type", "application/json; charset=utf-8"}], Jason.encode!(data)}
   end
 
   def form(data) do
-    {:ok, 200, [{"content-type", "application/x-www-form-urlencoded"}], URI.encode_query(data)}
+    text(URI.encode_query(data), "application/x-www-form-urlencoded")
+  end
+
+  def text(body, content_type \\ "text/plain") do
+    {:ok, 200, [{"content-type", content_type}], body}
   end
 end

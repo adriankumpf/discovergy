@@ -8,9 +8,10 @@ defmodule Discovergy.WebsiteAccessCodeTest do
         url: "https://api.inexogy.com/public/v1/website_access_code",
         query: [email: "$email"]
       } ->
-        form(%{"$code" => true})
+        text("2020060515c15010e31f803ed6f578efab3381c177db15e152f94be015bd938")
     end)
 
-    assert {:ok, "$code"} == Discovergy.WebsiteAccessCode.generate(client, "$email")
+    assert {:ok, "2020060515c15010e31f803ed6f578efab3381c177db15e152f94be015bd938"} ==
+             Discovergy.WebsiteAccessCode.generate(client, "$email")
   end
 end

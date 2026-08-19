@@ -15,7 +15,7 @@ defmodule DiscovergyTest do
     @impl true
     def request(_method, _url, _headers, _body, opts) do
       send(:discovergy_test, {:request, opts})
-      {:ok, 200, [], []}
+      {:ok, 200, [], ""}
     end
   end
 
@@ -79,7 +79,7 @@ defmodule DiscovergyTest do
 
   @tag config: [client_request_opts: [receive_timeout: 5_000]]
   test "passes the :client_request_opts to request/5" do
-    {:ok, _client} = Client.new() |> Client.login("$email", "$password")
+    assert {:ok, _devices} = Discovergy.Metadata.get_devices(Client.new(), "$meter_id")
     assert_receive {:request, receive_timeout: 5000}
   end
 end
