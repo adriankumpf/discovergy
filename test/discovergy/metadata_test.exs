@@ -79,6 +79,18 @@ defmodule Discovergy.MetadataTest do
             ]} == Discovergy.Metadata.get_meters(client)
   end
 
+  test "ignores fields the client does not know", %{client: client} do
+    mock(fn %{url: "https://api.inexogy.com/public/v1/meters"} ->
+      json([%{meterId: "$meter_id", somethingAddedLater: "surprise"}])
+    end)
+
+    assert {:ok, [%Discovergy.Meter{meter_id: "$meter_id"}]} =
+             Discovergy.Metadata.get_meters(client)
+
+    # Decoding a response must not create atoms.
+    assert_raise ArgumentError, fn -> String.to_existing_atom("something_added_later") end
+  end
+
   test "gets field names", %{client: client} do
     mock(fn
       %{url: "https://api.inexogy.com/public/v1/field_names", query: [meterId: "$meter_id"]} ->

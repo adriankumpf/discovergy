@@ -21,7 +21,7 @@ defmodule Discovergy.OAuth do
   defmodule Consumer do
     @moduledoc false
 
-    use Discovergy.Model
+    alias Discovergy.Model
 
     @type t() :: %__MODULE__{
             attributes: map(),
@@ -32,12 +32,14 @@ defmodule Discovergy.OAuth do
           }
 
     defstruct [:attributes, :key, :owner, :principal, :secret]
+
+    def into(attrs), do: Model.cast(__MODULE__, attrs)
   end
 
   defmodule Token do
     @moduledoc false
 
-    use Discovergy.Model
+    alias Discovergy.Model
 
     @type t() :: %__MODULE__{
             oauth_token: String.t(),
@@ -45,16 +47,20 @@ defmodule Discovergy.OAuth do
           }
 
     defstruct [:oauth_token, :oauth_token_secret]
+
+    def into(attrs), do: Model.cast(__MODULE__, attrs)
   end
 
   defmodule Grant do
     @moduledoc false
 
-    use Discovergy.Model
+    alias Discovergy.Model
 
     @opaque t() :: %__MODULE__{}
 
     defstruct [:oauth_verifier]
+
+    def into(attrs), do: Model.cast(__MODULE__, attrs)
   end
 
   @doc """

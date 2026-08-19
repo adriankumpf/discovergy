@@ -1,33 +1,30 @@
-defmodule Discovergy.Model do
-  @moduledoc false
+defmodule Discovergy.Location do
+  @moduledoc """
+  The address a meter is installed at.
+  """
 
-  @callback into(Enumerable.t()) :: struct
+  alias Discovergy.Model
 
-  defmacro __using__(_opts) do
-    quote do
-      @behaviour Discovergy.Model
+  @type t :: %__MODULE__{
+          city: String.t(),
+          country: String.t(),
+          street: String.t(),
+          street_number: String.t(),
+          zip: String.t()
+        }
 
-      @impl true
-      def into(attrs) do
-        fields = Enum.map(attrs, &camel_cased_key_to_existing_atom/1)
-        struct(__MODULE__, fields)
-      end
+  defstruct [:city, :country, :street, :street_number, :zip]
 
-      defoverridable into: 1
-
-      defp camel_cased_key_to_existing_atom({key, val}) do
-        {key
-         |> Macro.underscore()
-         |> String.to_existing_atom(), val}
-      rescue
-        ArgumentError -> {key, val}
-      end
-    end
-  end
+  @doc false
+  def into(attrs), do: Model.cast(__MODULE__, attrs)
 end
 
 defmodule Discovergy.Meter do
-  use Discovergy.Model
+  @moduledoc """
+  A meter the user has access to.
+  """
+
+  alias Discovergy.{Location, Model}
 
   @type t :: %__MODULE__{
           administration_number: String.t(),
@@ -38,12 +35,12 @@ defmodule Discovergy.Meter do
           kwh_scaling_factor: integer,
           last_measurement_time: non_neg_integer,
           load_profile_type: String.t(),
-          location: Discovergy.Location.t(),
+          location: Location.t(),
           manufacturer_id: String.t(),
           measurement_type: String.t(),
-          meter_id: String.t(),
+          meter_id: id,
           printed_full_serial_number: String.t(),
-          scaling_factor: integer(),
+          scaling_factor: integer,
           serial_number: String.t(),
           storage_numbers: [integer],
           submeter: boolean,
@@ -51,6 +48,7 @@ defmodule Discovergy.Meter do
           voltage_scaling_factor: integer
         }
 
+  @typedoc "The identifier of a meter."
   @type id :: String.t()
 
   defstruct [
@@ -75,52 +73,37 @@ defmodule Discovergy.Meter do
     :voltage_scaling_factor
   ]
 
-  @impl true
+  @doc false
   def into(attrs) do
-    fields =
-      Enum.map(attrs, fn
-        {"location", location} -> {:location, Discovergy.Location.into(location)}
-        # Macro.underscore/1 turns this into "k_wh_scaling_factor"
-        {"kWhScalingFactor", value} -> {:kwh_scaling_factor, value}
-        {key, value} -> camel_cased_key_to_existing_atom({key, value})
-      end)
-
-    struct(__MODULE__, fields)
+    Model.cast(__MODULE__, attrs,
+      cast: %{"location" => &Location.into/1},
+      # Macro.underscore/1 would turn this key into "k_wh_scaling_factor"
+      rename: %{"kWhScalingFactor" => :kwh_scaling_factor}
+    )
   end
 end
 
-defmodule Discovergy.Location do
-  use Discovergy.Model
-
-  @type t :: %__MODULE__{
-          city: String.t(),
-          country: String.t(),
-          street: String.t(),
-          street_number: String.t(),
-          zip: String.t()
-        }
-
-  defstruct [:city, :country, :street, :street_number, :zip]
-end
-
 defmodule Discovergy.Measurement do
-  use Discovergy.Model
+  @moduledoc """
+  The values a meter reported at a point in time.
+  """
 
-  @type t :: %__MODULE__{
-          time: DateTime.t(),
-          values: map
-        }
+  @type t :: %__MODULE__{time: DateTime.t(), values: %{String.t() => number}}
 
   defstruct [:time, :values]
 
-  @impl true
+  @doc false
   def into(%{"time" => time, "values" => values}) do
     %__MODULE__{time: DateTime.from_unix!(time, :millisecond), values: values}
   end
 end
 
 defmodule Discovergy.DisaggregationActivity do
-  use Discovergy.Model
+  @moduledoc """
+  A period during which a disaggregated device was recognised as active.
+  """
+
+  alias Discovergy.Model
 
   @type t :: %__MODULE__{
           activity_id: integer,
@@ -129,7 +112,7 @@ defmodule Discovergy.DisaggregationActivity do
           device_id: integer,
           device_name: String.t(),
           device_type: String.t(),
-          energy: integer()
+          energy: integer
         }
 
   defstruct [
@@ -142,32 +125,28 @@ defmodule Discovergy.DisaggregationActivity do
     :energy
   ]
 
-  @impl true
+  @doc false
   def into(attrs) do
-    fields =
-      Enum.map(attrs, fn
-        {"beginTime", time} -> {:begin_time, DateTime.from_unix!(time, :millisecond)}
-        {"endTime", time} -> {:end_time, DateTime.from_unix!(time, :millisecond)}
-        {key, value} -> camel_cased_key_to_existing_atom({key, value})
-      end)
+    to_datetime = &DateTime.from_unix!(&1, :millisecond)
 
-    struct(__MODULE__, fields)
+    Model.cast(__MODULE__, attrs, cast: %{"beginTime" => to_datetime, "endTime" => to_datetime})
   end
 end
 
 defmodule Discovergy.EnergyByDeviceMeasurement do
-  use Discovergy.Model
+  @moduledoc """
+  The energy consumed per disaggregated device during a 15 minute interval.
+  """
 
-  @type t :: %__MODULE__{
-          time: DateTime.t(),
-          energy_by_device: map
-        }
+  @type t :: %__MODULE__{time: DateTime.t(), energy_by_device: %{String.t() => number}}
 
   defstruct [:time, :energy_by_device]
 
-  @impl true
+  @doc false
   def into({time, energy_by_device}) do
-    time = time |> String.to_integer() |> DateTime.from_unix!(:millisecond)
-    %__MODULE__{time: time, energy_by_device: energy_by_device}
+    %__MODULE__{
+      time: time |> String.to_integer() |> DateTime.from_unix!(:millisecond),
+      energy_by_device: energy_by_device
+    }
   end
 end
