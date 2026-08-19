@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+- Fix `Discovergy.Client.login/3` failing on a client that had already logged in. The consumer of the previous session was kept and used to sign the two requests that open the OAuth flow, which have to go out unsigned, so the API rejected them.
+
+### Changes
+
+- Bump dependencies
+
 ## v0.7.0 (2025-09-07)
 
 - Use inexogy domain
