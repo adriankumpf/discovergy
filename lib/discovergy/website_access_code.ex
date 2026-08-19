@@ -3,7 +3,7 @@ defmodule Discovergy.WebsiteAccessCode do
   The Webste Access Code endpoint
   """
 
-  alias Discovergy.Client
+  alias Discovergy.{Client, Error}
 
   @doc """
   Generates an access code that can be used to login a user into the Discovery

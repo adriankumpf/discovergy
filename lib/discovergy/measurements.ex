@@ -3,8 +3,24 @@ defmodule Discovergy.Measurements do
   The Measurements endpoint
   """
 
-  alias Discovergy.Client
-  alias Discovergy.Measurement
+  alias Discovergy.{Client, Error, Measurement, Meter}
+
+  @typedoc """
+  The time distance between returned readings.
+
+  The API caps the interval that can be requested at each resolution: one day
+  for `:raw`, ten days for `:three_minutes`, 31 days for `:fifteen_minutes`,
+  93 days for `:one_hour` and ten years or more above that.
+  """
+  @type resolution ::
+          :raw
+          | :three_minutes
+          | :fifteen_minutes
+          | :one_hour
+          | :one_day
+          | :one_week
+          | :one_month
+          | :one_year
 
   @doc """
   Return the measurements for the specified meter in the specified time interval.
@@ -13,10 +29,9 @@ defmodule Discovergy.Measurements do
 
     * `:fields` - list of measurement fields to return in the result (use
     `Discovergy.Metadata.get_field_names/2` to get all available fields)
-    * `:resolution` - time distance between returned readings. Possible values:
-    `:raw` (default), `:three_minutes`, `:fifteen_minutes`, `:one_hour`, `:one_day`,
-    `:one_week`, `:one_month`, `:one_year`
-    * `: disaggregation ` - Include load disaggregation as pseudo-measurement
+    * `:resolution` - time distance between returned readings, see
+    `t:resolution/0` (default: `:raw`)
+    * `:disaggregation` - Include load disaggregation as pseudo-measurement
     fields, if available. Only applies if raw resolution is selected
     * `:each` - Return data from the virtual meter itself (false) or all its
     sub-meters (true). Only applies if meterId refers to a virtual meter

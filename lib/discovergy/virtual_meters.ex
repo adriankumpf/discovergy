@@ -3,8 +3,7 @@ defmodule Discovergy.VirtualMeters do
   The Virtual Meters endpoint
   """
 
-  alias Discovergy.Client
-  alias Discovergy.Meter
+  alias Discovergy.{Client, Error, Meter}
 
   @doc """
   Return the individual meters comprising the specified virtual meter.

@@ -3,8 +3,7 @@ defmodule Discovergy.Metadata do
   The Metadata endpoint
   """
 
-  alias Discovergy.Client
-  alias Discovergy.Meter
+  alias Discovergy.{Client, Error, Meter}
 
   @doc """
   Returns the devices recognised for the given meter.

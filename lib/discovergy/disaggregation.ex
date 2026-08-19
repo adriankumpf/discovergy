@@ -3,8 +3,7 @@ defmodule Discovergy.Disaggregation do
   The Disaggregation endpoint
   """
 
-  alias Discovergy.Client
-  alias Discovergy.{DisaggregationActivity, EnergyByDeviceMeasurement}
+  alias Discovergy.{Client, DisaggregationActivity, EnergyByDeviceMeasurement, Error, Meter}
 
   @doc """
   Provides the disaggregated energy for the specified meter at 15 minute
