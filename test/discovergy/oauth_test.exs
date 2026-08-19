@@ -55,6 +55,59 @@ defmodule Discovergy.OAuthTest do
     assert_receive {"/public/v1/oauth1/authorize", nil}
   end
 
+  @tag :logged_in
+  test "reauthorizes without registering another consumer", %{client: client} do
+    test_pid = self()
+
+    mock(fn response ->
+      send(test_pid, {:path, URI.parse(response.url).path})
+      full_authorization(response)
+    end)
+
+    assert {:ok, %Discovergy.Client{consumer: consumer, token: token}} =
+             Discovergy.Client.reauthorize(client, "$email", "$password")
+
+    assert consumer == client.consumer
+
+    assert %Discovergy.OAuth.Token{
+             oauth_token: "$access_token",
+             oauth_token_secret: "$access_token_secret"
+           } == token
+
+    assert_receive {:path, "/public/v1/oauth1/request_token"}
+    assert_receive {:path, "/public/v1/oauth1/authorize"}
+    assert_receive {:path, "/public/v1/oauth1/access_token"}
+
+    # The point of the whole exercise: the API rate limits this one.
+    refute_receive {:path, "/public/v1/oauth1/consumer_token"}
+  end
+
+  @tag :logged_in
+  test "opens the reauthorization flow with the right credentials", %{client: client} do
+    test_pid = self()
+
+    mock(fn response ->
+      send(test_pid, {URI.parse(response.url).path, authorization(response.headers)})
+      full_authorization(response)
+    end)
+
+    assert {:ok, %Discovergy.Client{}} =
+             Discovergy.Client.reauthorize(client, "$email", "$password")
+
+    # Signed in already, but this one still has to go out unsigned.
+    assert_receive {"/public/v1/oauth1/authorize", nil}
+
+    # Signed as the consumer, and never with the access token being replaced.
+    assert_receive {"/public/v1/oauth1/request_token", auth}
+    assert auth =~ "oauth_consumer_key="
+    refute auth =~ "oauth_token="
+  end
+
+  test "refuses to reauthorize a client that is not signed in", %{client: client} do
+    assert {:error, %Discovergy.Error{reason: :not_logged_in}} =
+             Discovergy.Client.reauthorize(client, "$email", "$password")
+  end
+
   defp authorization(headers) do
     Enum.find_value(headers, fn {key, value} ->
       if String.downcase(key) == "authorization", do: value

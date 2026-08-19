@@ -39,13 +39,13 @@ defmodule Discovergy.MixProject do
       licenses: ["MIT"],
       maintainers: ["Adrian Kumpf"],
       links: %{"GitHub" => @source_url, "Changelog" => "#{@source_url}/blob/master/CHANGELOG.md"},
-      files: ~w(lib mix.exs README.md LICENSE CHANGELOG.md)
+      files: ~w(lib guides mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
   defp docs do
     [
-      extras: ~w(CHANGELOG.md README.md),
+      extras: ~w(README.md guides/api-quirks.md CHANGELOG.md),
       source_ref: "#{@version}",
       source_url: @source_url,
       main: "readme",
@@ -66,7 +66,7 @@ defmodule Discovergy.MixProject do
           Discovergy.EnergyByDeviceMeasurement
         ]
       ],
-      skip_undefined_reference_warnings_on: ~w(CHANGELOG.md README.md)
+      skip_undefined_reference_warnings_on: ~w(CHANGELOG.md README.md guides/api-quirks.md)
     ]
   end
 end

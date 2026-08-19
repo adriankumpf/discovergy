@@ -1,6 +1,13 @@
 defmodule Discovergy.Client do
   @moduledoc """
   A Discovergy API Client
+
+  Access tokens expire, and an expired one comes back as a `401` with an empty
+  body. Use `reauthorize/3` rather than `login/3` to get a new one: the API
+  rate limits consumer registration and asks clients to reuse tokens.
+
+  See [Quirks of the API](api-quirks.md) for the behaviour this library has to
+  work around.
   """
 
   alias Discovergy.{Config, OAuth, Error}
@@ -51,13 +58,42 @@ defmodule Discovergy.Client do
   @spec login(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
   def login(%__MODULE__{} = client, email, password)
       when is_binary(email) and is_binary(password) do
-    # The consumer_token and authorize requests have to go out unsigned, and
-    # build_request/5 falls back to the client's credentials, so without this a
-    # client that had logged in before could never log in again.
-    client = %__MODULE__{client | consumer: nil, token: nil}
-
     with {:ok, {consumer, token}} <- OAuth.login(client, email, password) do
       {:ok, %__MODULE__{client | token: token, consumer: consumer}}
+    end
+  end
+
+  @doc """
+  Obtains a new access token for a client that is already signed in.
+
+  Reuses the consumer registered by `login/3` rather than registering another
+  one, which is what the API asks for: it rate limits `consumer_token`
+  requests and answers with `429 Too Many Requests: ... Please reuse tokens!`
+  once a client registers too often.
+
+  Prefer this over calling `login/3` again when an access token expires. A
+  long-running application that signs in once and reauthorizes on every `401`
+  registers a single consumer for its lifetime.
+
+  Named for what it does: the API has no credential-free refresh, so this needs
+  the user's password just as `login/3` does. Only the consumer is spared.
+
+  ## Examples
+
+      iex> {:ok, client} = Discovergy.Client.reauthorize(client, email, password)
+      {:ok, %Discovergy.Client{}}
+
+  """
+  @spec reauthorize(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
+  def reauthorize(%__MODULE__{consumer: nil}, email, password)
+      when is_binary(email) and is_binary(password) do
+    {:error, %Error{reason: :not_logged_in}}
+  end
+
+  def reauthorize(%__MODULE__{consumer: consumer} = client, email, password)
+      when is_binary(email) and is_binary(password) do
+    with {:ok, token} <- OAuth.reauthorize(client, consumer, email, password) do
+      {:ok, %__MODULE__{client | token: token}}
     end
   end
 
@@ -103,8 +139,8 @@ defmodule Discovergy.Client do
 
   defp build_request(%__MODULE__{} = client, method, path, body, opts) do
     query = opts[:query] || []
-    consumer = opts[:consumer] || client.consumer
-    token = opts[:token] || client.token
+    consumer = Keyword.get(opts, :consumer, client.consumer)
+    token = Keyword.get(opts, :token, client.token)
 
     request = %{
       method: method,
