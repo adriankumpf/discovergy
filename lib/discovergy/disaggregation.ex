@@ -10,6 +10,8 @@ defmodule Discovergy.Disaggregation do
   Provides the disaggregated energy for the specified meter at 15 minute
   intervals.
 
+  The API rejects intervals longer than one week with a `400`.
+
   ## Examples
 
       iex> Discovergy.Disaggregation.get_energy_by_device_measurements(
@@ -61,6 +63,8 @@ defmodule Discovergy.Disaggregation do
   @doc """
   Returns the activities recognised for the given meter during the given
   interval.
+
+  The API rejects intervals longer than one week with a `400`.
 
   ## Examples
 

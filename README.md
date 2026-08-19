@@ -54,6 +54,7 @@ iex> Discovergy.Metadata.get_meters(client)
   printed_full_serial_number: "1ESY1161229886",
   scaling_factor: 1,
   serial_number: "61229886",
+  storage_numbers: [1, 7, 14],
   submeter: false,
   type: "EASYMETER",
   voltage_scaling_factor: 1

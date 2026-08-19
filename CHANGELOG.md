@@ -12,7 +12,9 @@
 
 ### Changes
 
-- Add the `kwh_scaling_factor`, `printed_full_serial_number` and `submeter` fields to `Discovergy.Meter`. The API returns them but they were silently dropped.
+- Add the `kwh_scaling_factor`, `printed_full_serial_number`, `storage_numbers` and `submeter` fields to `Discovergy.Meter`. The API returns them but they were silently dropped.
+- Fix the `Discovergy.Measurement` typespec: `values` is a map, not a list of maps.
+- Document that the disaggregation endpoints reject intervals longer than one week.
 - Bump dependencies
 
 ## v0.7.0 (2025-09-07)

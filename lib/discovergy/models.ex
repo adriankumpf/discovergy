@@ -45,6 +45,7 @@ defmodule Discovergy.Meter do
           printed_full_serial_number: String.t(),
           scaling_factor: integer(),
           serial_number: String.t(),
+          storage_numbers: [integer],
           submeter: boolean,
           type: String.t(),
           voltage_scaling_factor: integer
@@ -68,6 +69,7 @@ defmodule Discovergy.Meter do
     :printed_full_serial_number,
     :scaling_factor,
     :serial_number,
+    :storage_numbers,
     :submeter,
     :type,
     :voltage_scaling_factor
@@ -106,7 +108,7 @@ defmodule Discovergy.Measurement do
 
   @type t :: %__MODULE__{
           time: DateTime.t(),
-          values: [map]
+          values: map
         }
 
   defstruct [:time, :values]

@@ -30,6 +30,7 @@ defmodule Discovergy.VirtualMetersTest do
             currentScalingFactor: 1,
             voltageScalingFactor: 1,
             kWhScalingFactor: 10_000_000_000,
+            storageNumbers: [1, 7, 14],
             submeter: false,
             internalMeters: 1,
             firstMeasurementTime: 1_563_286_659_367,
@@ -62,6 +63,7 @@ defmodule Discovergy.VirtualMetersTest do
                 printed_full_serial_number: "1ESY1161229886",
                 scaling_factor: 1,
                 serial_number: "61229886",
+                storage_numbers: [1, 7, 14],
                 submeter: false,
                 type: "EASYMETER",
                 voltage_scaling_factor: 1

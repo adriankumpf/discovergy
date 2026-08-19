@@ -48,6 +48,7 @@ defmodule Discovergy.Metadata do
          current_scaling_factor: 1,
          voltage_scaling_factor: 1,
          kwh_scaling_factor: 10000000000,
+         storage_numbers: [1, 7, 14],
          submeter: false,
          internal_meters: 1,
          first_measurement_time: 1563286659367,
