@@ -4,6 +4,7 @@
 
 ### Breaking Changes
 
+- Remove `Discovergy.Measurements.get_raw_load_profile/3`. The `/raw_load_profile` endpoint no longer exists and the API returns a 404 for every request, so the function could not succeed.
 - Require Elixir 1.15. The `finch`, `mint` and `hpax` releases carrying the fixes for [CVE-2026-58226](https://osv.dev/vulnerability/EEF-CVE-2026-58226), [CVE-2026-49754](https://osv.dev/vulnerability/EEF-CVE-2026-49754) and [CVE-2026-48862](https://osv.dev/vulnerability/EEF-CVE-2026-48862) no longer compile on older versions.
 
 ### Bug Fixes
