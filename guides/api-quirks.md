@@ -4,9 +4,39 @@ Behaviour of the Discovergy (inexogy) API that the [official
 documentation](https://api.inexogy.com/docs/) does not cover, collected from
 running against it. Worth reading before deploying anything long-lived.
 
+## HTTP Basic auth works, and is not documented anywhere
+
+Every data endpoint accepts plain HTTP Basic auth with the account's email and
+password:
+
+```
+curl -u 'demo@inexogy.com:demo' https://api.inexogy.com/public/v1/meters
+```
+
+Verified against `meters`, `field_names`, `last_reading`, `devices` and
+`statistics`, all returning `200`. Without credentials, or with a wrong
+password, the same request is a `401`.
+
+This matters because it sidesteps everything below about tokens: nothing to
+expire, no consumer to register, and neither of the rate limits. The
+[ioBroker adapter](https://github.com/DrozmotiX/ioBroker.discovergy) has used
+it exclusively for years.
+
+This library uses OAuth 1.0a, which the official documentation describes as the
+way in. Basic auth is undocumented, so it carries the risk that anything
+undocumented does: it could be withdrawn without notice. The token behaviour
+below applies whenever OAuth is used.
+
+## A public demo account exists
+
+`demo@inexogy.com` / `demo`, with four meters covering electricity, gas and an
+RLM meter. Useful for reproducing behaviour that a single-meter account cannot
+show, such as the `storageNumbers` field, which some meters return and others
+do not.
+
 ## Access tokens expire
 
-They do, and not on a fixed schedule. Intervals observed in production ranged
+Using OAuth, they do, and not on a fixed schedule. Intervals observed in production ranged
 from a few seconds to roughly 24 hours, with a cluster of expiries between
 03:53 and 03:55 on separate days that looks like nightly maintenance.
 
@@ -24,7 +54,7 @@ case Discovergy.Measurements.get_last_reading(client, meter_id) do
     handle(measurement)
 
   {:error, %Discovergy.Error{response: {401, _, _}}} ->
-    Discovergy.Client.refresh(client, email, password)
+    Discovergy.Client.reauthorize(client, email, password)
 
   {:error, error} ->
     handle_error(error)
@@ -43,7 +73,7 @@ second consecutive failure onwards.
 `/oauth1/authorize` takes the email and password directly as query parameters
 rather than redirecting the user to log in at the provider. So getting a new
 access token always requires the user's credentials, and an application that
-refreshes unattended has to keep them.
+renews its token unattended has to keep them.
 
 This is unlike ordinary OAuth 1.0a, where authorization is a browser redirect
 and the client never sees the password, and unlike OAuth 2.0, whose
@@ -59,7 +89,7 @@ accounts does not lift them.
 429 Too Many Requests: Rate of authorize requests from <ip> is too high.
 ```
 
-Use `Discovergy.Client.refresh/3` rather than `Discovergy.Client.login/3` to
+Use `Discovergy.Client.reauthorize/3` rather than `Discovergy.Client.login/3` to
 renew a token. It reuses the consumer registered by the first login and never
 calls `consumer_token`. The consumer can also be persisted and handed back to
 `Discovergy.Client.new/1` so it survives a restart:

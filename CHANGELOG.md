@@ -12,8 +12,8 @@
 
 ### Changes
 
-- Document the quirks of the API: token expiry, the rate limits on consumer registration and authorization, the shape its errors arrive in, and the undocumented meter fields.
-- Add `Discovergy.Client.refresh/3`, which obtains a new access token while reusing the consumer registered by `login/3`. The API rate limits `consumer_token` requests and asks clients to reuse tokens, so an application that refreshed by calling `login/3` again would eventually be answered with a `429`.
+- Document the quirks of the API: that HTTP Basic auth works and avoids the token lifecycle entirely, token expiry, the rate limits on consumer registration and authorization, the shape its errors arrive in, and the undocumented meter fields.
+- Add `Discovergy.Client.reauthorize/3`, which obtains a new access token while reusing the consumer registered by `login/3`. The API rate limits `consumer_token` requests and asks clients to reuse tokens, so an application that refreshed by calling `login/3` again would eventually be answered with a `429`.
 - Add the `kwh_scaling_factor`, `printed_full_serial_number`, `storage_numbers` and `submeter` fields to `Discovergy.Meter`. The API returns them but they were silently dropped.
 - Fix the `Discovergy.Measurement` typespec: `values` is a map, not a list of maps.
 - Document that the disaggregation endpoints reject intervals longer than one week.

@@ -13,7 +13,7 @@ defmodule Discovergy.OAuth do
           {:ok, {Consumer.t(), Token.t()}} | {:error, Error.t()}
   def login(%Client{} = client, email, password) do
     with {:ok, consumer} <- register_consumer(client, @client_id),
-         {:ok, access_token} <- refresh(client, consumer, email, password) do
+         {:ok, access_token} <- reauthorize(client, consumer, email, password) do
       {:ok, {consumer, access_token}}
     end
   end
@@ -60,9 +60,9 @@ defmodule Discovergy.OAuth do
   @doc """
   Authorization steps 2 to 4, for a consumer that is already registered.
   """
-  @spec refresh(Client.t(), Consumer.t(), String.t(), String.t()) ::
+  @spec reauthorize(Client.t(), Consumer.t(), String.t(), String.t()) ::
           {:ok, Token.t()} | {:error, Error.t()}
-  def refresh(%Client{} = client, %Consumer{} = consumer, email, password) do
+  def reauthorize(%Client{} = client, %Consumer{} = consumer, email, password) do
     with {:ok, request_token} <- get_request_token(client, consumer),
          {:ok, grant} <- authorize(client, request_token, email, password) do
       get_access_token(client, consumer, request_token, grant)

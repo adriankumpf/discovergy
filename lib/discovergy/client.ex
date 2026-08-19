@@ -3,8 +3,8 @@ defmodule Discovergy.Client do
   A Discovergy API Client
 
   Access tokens expire, and an expired one comes back as a `401` with an empty
-  body. Use `refresh/3` rather than `login/3` to renew one: the API rate limits
-  consumer registration and asks clients to reuse tokens.
+  body. Use `reauthorize/3` rather than `login/3` to get a new one: the API
+  rate limits consumer registration and asks clients to reuse tokens.
 
   See [Quirks of the API](api-quirks.md) for the behaviour this library has to
   work around.
@@ -72,24 +72,27 @@ defmodule Discovergy.Client do
   once a client registers too often.
 
   Prefer this over calling `login/3` again when an access token expires. A
-  long-running application that signs in once and refreshes on every `401`
+  long-running application that signs in once and reauthorizes on every `401`
   registers a single consumer for its lifetime.
+
+  Named for what it does: the API has no credential-free refresh, so this needs
+  the user's password just as `login/3` does. Only the consumer is spared.
 
   ## Examples
 
-      iex> {:ok, client} = Discovergy.Client.refresh(client, email, password)
+      iex> {:ok, client} = Discovergy.Client.reauthorize(client, email, password)
       {:ok, %Discovergy.Client{}}
 
   """
-  @spec refresh(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
-  def refresh(%__MODULE__{consumer: nil}, email, password)
+  @spec reauthorize(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
+  def reauthorize(%__MODULE__{consumer: nil}, email, password)
       when is_binary(email) and is_binary(password) do
     {:error, %Error{reason: :not_logged_in}}
   end
 
-  def refresh(%__MODULE__{consumer: consumer} = client, email, password)
+  def reauthorize(%__MODULE__{consumer: consumer} = client, email, password)
       when is_binary(email) and is_binary(password) do
-    with {:ok, token} <- OAuth.refresh(client, consumer, email, password) do
+    with {:ok, token} <- OAuth.reauthorize(client, consumer, email, password) do
       {:ok, %__MODULE__{client | token: token}}
     end
   end

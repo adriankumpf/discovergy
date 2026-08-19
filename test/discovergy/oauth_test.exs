@@ -56,7 +56,7 @@ defmodule Discovergy.OAuthTest do
   end
 
   @tag :logged_in
-  test "refreshes the token without registering another consumer", %{client: client} do
+  test "reauthorizes without registering another consumer", %{client: client} do
     test_pid = self()
 
     mock(fn response ->
@@ -65,7 +65,7 @@ defmodule Discovergy.OAuthTest do
     end)
 
     assert {:ok, %Discovergy.Client{consumer: consumer, token: token}} =
-             Discovergy.Client.refresh(client, "$email", "$password")
+             Discovergy.Client.reauthorize(client, "$email", "$password")
 
     assert consumer == client.consumer
 
@@ -83,7 +83,7 @@ defmodule Discovergy.OAuthTest do
   end
 
   @tag :logged_in
-  test "opens the refresh flow with the right credentials", %{client: client} do
+  test "opens the reauthorization flow with the right credentials", %{client: client} do
     test_pid = self()
 
     mock(fn response ->
@@ -91,7 +91,8 @@ defmodule Discovergy.OAuthTest do
       full_authorization(response)
     end)
 
-    assert {:ok, %Discovergy.Client{}} = Discovergy.Client.refresh(client, "$email", "$password")
+    assert {:ok, %Discovergy.Client{}} =
+             Discovergy.Client.reauthorize(client, "$email", "$password")
 
     # Signed in already, but this one still has to go out unsigned.
     assert_receive {"/public/v1/oauth1/authorize", nil}
@@ -102,9 +103,9 @@ defmodule Discovergy.OAuthTest do
     refute auth =~ "oauth_token="
   end
 
-  test "refuses to refresh a client that is not signed in", %{client: client} do
+  test "refuses to reauthorize a client that is not signed in", %{client: client} do
     assert {:error, %Discovergy.Error{reason: :not_logged_in}} =
-             Discovergy.Client.refresh(client, "$email", "$password")
+             Discovergy.Client.reauthorize(client, "$email", "$password")
   end
 
   defp authorization(headers) do
