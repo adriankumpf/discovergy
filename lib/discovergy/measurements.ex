@@ -67,6 +67,7 @@ defmodule Discovergy.Measurements do
   @spec get_readings(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, [Measurement.t()]} | {:error, Error.t()}
   def get_readings(%Client{} = client, meter_id, from, opts \\ []) do
+    opts = Keyword.validate!(opts, [:to, :fields, :resolution, :disaggregation, :each])
     to = opts[:to]
 
     parameters = [
@@ -116,6 +117,8 @@ defmodule Discovergy.Measurements do
   @spec get_last_reading(Client.t(), Meter.id(), Keyword.t()) ::
           {:ok, Measurement.t()} | {:error, Error.t()}
   def get_last_reading(%Client{} = client, meter_id, opts \\ []) do
+    opts = Keyword.validate!(opts, [:fields, :each])
+
     parameters = [meterId: meter_id, fields: fields(opts[:fields]), each: opts[:each]]
 
     with {:ok, measurement} <- Client.get(client, "/last_reading", query: parameters) do
@@ -173,6 +176,7 @@ defmodule Discovergy.Measurements do
   @spec get_statistics(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, map()} | {:error, Error.t()}
   def get_statistics(%Client{} = client, meter_id, from, opts \\ []) do
+    opts = Keyword.validate!(opts, [:to, :fields])
     to = opts[:to]
 
     parameters = [
@@ -220,6 +224,8 @@ defmodule Discovergy.Measurements do
   @spec get_load_profile(Client.t(), Meter.id(), Date.t(), Date.t(), Keyword.t()) ::
           {:ok, [map]} | {:error, Error.t()}
   def get_load_profile(%Client{} = client, meter_id, from, to, opts \\ []) do
+    opts = Keyword.validate!(opts, [:resolution])
+
     {from_year, from_month, from_day} = Date.to_erl(from)
     {to_year, to_month, to_day} = Date.to_erl(to)
 

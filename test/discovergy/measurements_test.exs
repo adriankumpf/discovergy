@@ -100,6 +100,14 @@ defmodule Discovergy.MeasurementsTest do
              )
   end
 
+  test "rejects an unknown option", %{client: client} do
+    assert_raise ArgumentError, ~r/unknown keys \[:resolutions\]/, fn ->
+      Discovergy.Measurements.get_readings(client, "$meter_id", ~U[2020-07-01 00:00:00Z],
+        resolutions: :one_day
+      )
+    end
+  end
+
   test "gets last reading", %{client: client} do
     mock(fn
       %{

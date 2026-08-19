@@ -45,6 +45,7 @@ defmodule Discovergy.Disaggregation do
   @spec get_energy_by_device_measurements(Client.t(), Meter.id(), DateTime.t(), Keyword.t()) ::
           {:ok, [EnergyByDeviceMeasurement.t()]} | {:error, Error.t()}
   def get_energy_by_device_measurements(%Client{} = client, meter_id, from, opts \\ []) do
+    opts = Keyword.validate!(opts, [:to])
     to = opts[:to]
 
     parameters = [

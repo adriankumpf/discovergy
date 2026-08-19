@@ -16,6 +16,7 @@
   + Discovergy.Measurements.get_statistics(client, meter_id, from, fields: [:energy])
   ```
 
+- Raise on an option the endpoint does not have. A misspelled `:resolution` or `:fields` used to be dropped silently, and the request went out without it.
 - `Discovergy.WebsiteAccessCode.generate/2` returns the access code as the API sends it. It used to be decoded as a query string, and the first key of the resulting map was returned as the code.
 - An unsuccessful response with an empty body is reported as `{:http_error, status}` instead of `:unknown`, which rendered as `":unknown"`.
 
