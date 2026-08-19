@@ -18,6 +18,7 @@ defmodule Discovergy.OAuth do
             secret: String.t()
           }
 
+    @derive {Inspect, except: [:secret]}
     defstruct [:attributes, :key, :owner, :principal, :secret]
 
     def into(attrs), do: Model.cast(__MODULE__, attrs)
@@ -33,6 +34,7 @@ defmodule Discovergy.OAuth do
             oauth_token_secret: String.t()
           }
 
+    @derive {Inspect, except: [:oauth_token_secret]}
     defstruct [:oauth_token, :oauth_token_secret]
 
     def into(attrs), do: Model.cast(__MODULE__, attrs)

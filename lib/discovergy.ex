@@ -8,7 +8,7 @@ defmodule Discovergy do
   Create a `Discovergy.Client` and authenticate with the Discovergy API using your email address and password.
 
       iex> {:ok, client} = Discovergy.Client.new() |> Discovergy.Client.login(email, password)
-      {:ok, %Discovergy.Client{}}
+      {:ok, #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>}
 
   Then pass the `client` to the respective endpoint function. For example, to list all meters the user has access to:
 

@@ -16,7 +16,16 @@ defmodule Discovergy.Client do
   @user_agent "github.com/adriankumpf/discovergy"
   @form_urlencoded "application/x-www-form-urlencoded"
 
-  @opaque t :: %__MODULE__{}
+  @opaque t :: %__MODULE__{
+            base_url: String.t(),
+            http_client: module,
+            consumer: OAuth.Consumer.t() | nil,
+            token: OAuth.Token.t() | nil
+          }
+
+  # The client carries the OAuth secrets of the session. Keep them out of
+  # logs, crash reports and iex output.
+  @derive {Inspect, only: [:base_url]}
 
   @enforce_keys [:base_url, :http_client]
   defstruct [:base_url, :http_client, :consumer, :token]
@@ -32,8 +41,8 @@ defmodule Discovergy.Client do
 
   ## Examples
 
-      iex> client = Discovergy.Client.new()
-      %Discovergy.Client{}
+      iex> Discovergy.Client.new()
+      #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>
 
   """
   @spec new(Keyword.t()) :: t
@@ -54,7 +63,7 @@ defmodule Discovergy.Client do
 
       iex> {:ok, client} = Discovergy.Client.new()
       ...>                 |> Discovergy.Client.login(email, password)
-      {:ok, %Discovergy.Client{}}
+      {:ok, #Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>}
 
   """
   @spec login(t, String.t(), String.t()) :: {:ok, t} | {:error, Error.t()}
