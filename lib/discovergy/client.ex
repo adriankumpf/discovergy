@@ -6,6 +6,9 @@ defmodule Discovergy.Client do
   body. Use `reauthorize/3` rather than `login/3` to get a new one: the API
   rate limits consumer registration and asks clients to reuse tokens.
 
+  Consumers expire too. `reauthorize/3` then fails with
+  `reason: :consumer_rejected`, and `login/3` registers a new one.
+
   See [Quirks of the API](api-quirks.md) for the behaviour this library has to
   work around.
   """
@@ -97,6 +100,24 @@ defmodule Discovergy.Client do
 
   Named for what it does: the API has no credential-free refresh, so this needs
   the user's password just as `login/3` does. Only the consumer is spared.
+
+  ## When the consumer is gone
+
+  The API drops consumers too, usually at the nightly maintenance that expires
+  the token. `reauthorize/3` then fails with `reason: :consumer_rejected`, and
+  only `login/3` recovers from it:
+
+      case Discovergy.Client.reauthorize(client, email, password) do
+        {:error, %Discovergy.Error{reason: :consumer_rejected}} ->
+          Discovergy.Client.login(client, email, password)
+
+        result ->
+          result
+      end
+
+  `login/3` discards the credentials of the previous session, so hand it the
+  same client rather than a new one, which would lose its `:base_url` and
+  `:http_client`.
 
   ## Examples
 

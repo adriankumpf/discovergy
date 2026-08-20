@@ -76,9 +76,18 @@ defmodule Discovergy.OAuth do
   end
 
   defp get_request_token(client, consumer) do
-    with {:ok, body} <-
-           Client.post(client, "/oauth1/request_token", [], consumer: consumer, token: nil) do
-      {:ok, Token.into(URI.decode_query(body))}
+    case Client.post(client, "/oauth1/request_token", [], consumer: consumer, token: nil) do
+      {:ok, body} ->
+        {:ok, Token.into(URI.decode_query(body))}
+
+      # The endpoint takes no parameters of its own, so an empty-bodied 400 or
+      # 401 is about the consumer: an unknown key, or a signature that does not
+      # check out. A body means the API had something else to say.
+      {:error, %Error{reason: {:http_error, status}} = error} when status in [400, 401] ->
+        {:error, %Error{error | reason: :consumer_rejected}}
+
+      {:error, error} ->
+        {:error, error}
     end
   end
 
