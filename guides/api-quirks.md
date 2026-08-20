@@ -54,8 +54,8 @@ to pre-empt with a timer.
 ## An expired token is a 401 with an empty body
 
 The API sends no body with it, so `Discovergy.Error` carries
-`reason: {:http_error, 401}` rather than a message. Match on the status, never
-on the reason:
+`reason: {:http_error, 401}` rather than a message. Match on the status rather
+than on that reason:
 
 ```elixir
 case Discovergy.Measurements.get_last_reading(client, meter_id) do
@@ -76,6 +76,50 @@ A freshly issued token can be rejected within seconds of being issued. A
 handler that re-authenticates on every 401 without backing off will hot loop
 against `authorize`, which is rate limited (see below). Back off from the
 second consecutive failure onwards.
+
+## Consumers expire too, and a rejected one is a 400
+
+The consumer registered by `consumer_token` is not permanent either, and it
+tends to go at the same time as the access token. A client that signed in the
+previous evening and reauthorized after the nightly expiry found the consumer
+gone.
+
+Where the data endpoints answer 401 for credentials they no longer accept,
+`/oauth1/request_token` answers 400 with an empty body:
+
+```
+$ curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+    -H 'Authorization: OAuth oauth_consumer_key="<unknown>", ...' \
+    https://api.inexogy.com/public/v1/oauth1/request_token
+400
+```
+
+The same 400 comes back for a key the API knows but a signature that does not
+check out. The endpoint takes no parameters of its own, so a 400 there is about
+the consumer, not the request.
+
+This is the failure that strands a long-running client: `reauthorize/3` cannot
+get past `request_token`, and no backoff makes that better. Only `login/3`
+does, by registering a new consumer. Since a bare `{:http_error, 400}` does not
+say that, `Discovergy.Client.reauthorize/3` reports it as `:consumer_rejected`:
+
+```elixir
+case Discovergy.Client.reauthorize(client, email, password) do
+  {:ok, client} ->
+    client
+
+  {:error, %Discovergy.Error{reason: :consumer_rejected}} ->
+    Discovergy.Client.login(client, email, password)
+
+  {:error, error} ->
+    handle_error(error)
+end
+```
+
+`login/3` discards the credentials of the previous session, so it takes the
+same client. Registering once a night is far inside the `consumer_token` rate
+limit; registering on every 401 is not, which is why this stays a separate
+branch from token expiry.
 
 ## There is no credential-free refresh
 
@@ -109,6 +153,9 @@ calls `consumer_token`. The consumer can also be persisted and handed back to
 # persist client.consumer and client.token, then later:
 client = Discovergy.Client.new(consumer: consumer, token: token)
 ```
+
+A persisted consumer expires like any other, so be ready for the
+`:consumer_rejected` above and register a new one.
 
 `authorize` is limited more tightly than `consumer_token`. Two calls in quick
 succession from one address are enough to trigger it.

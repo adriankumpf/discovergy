@@ -103,6 +103,36 @@ defmodule Discovergy.OAuthTest do
     refute auth =~ "oauth_token="
   end
 
+  for status <- [400, 401] do
+    @tag :logged_in
+    test "reports a consumer rejected with an empty #{status} as such", %{client: client} do
+      mock(fn %{url: "https://api.inexogy.com/public/v1/oauth1/request_token"} ->
+        {:ok, unquote(status), [], ""}
+      end)
+
+      assert {:error,
+              %Discovergy.Error{reason: :consumer_rejected, response: {unquote(status), [], ""}}} =
+               Discovergy.Client.reauthorize(client, "$email", "$password")
+    end
+  end
+
+  # Only the empty-bodied ones are the consumer. Anything the API bothered to
+  # explain keeps its explanation.
+  for {status, body} <- [
+        {400, "400 Bad Request: something else entirely"},
+        {429, "429 Too Many Requests: Rate of authorize requests is too high."}
+      ] do
+    @tag :logged_in
+    test "leaves a request_token #{status} that has a body alone", %{client: client} do
+      mock(fn %{url: "https://api.inexogy.com/public/v1/oauth1/request_token"} ->
+        {:ok, unquote(status), [{"content-type", "text/plain"}], unquote(body)}
+      end)
+
+      assert {:error, %Discovergy.Error{reason: unquote(body)}} =
+               Discovergy.Client.reauthorize(client, "$email", "$password")
+    end
+  end
+
   test "refuses to reauthorize a client that is not signed in", %{client: client} do
     assert {:error, %Discovergy.Error{reason: :not_logged_in}} =
              Discovergy.Client.reauthorize(client, "$email", "$password")

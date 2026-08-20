@@ -22,6 +22,7 @@
 
 ### Bug Fixes
 
+- Report a consumer the API no longer accepts as `%Discovergy.Error{reason: :consumer_rejected}`. `/oauth1/request_token` answers one with a `400` and an empty body, so `Discovergy.Client.reauthorize/3` failed with a bare `{:http_error, 400}` that nothing could tell apart from a malformed request. A long-running client that renews its token on a `401` would retry the dead consumer forever instead of registering a new one with `login/3`. `Exception.message/1` renders it, and `:not_logged_in`, as a sentence rather than an inspected atom.
 - Fix `Discovergy.Client.login/3` failing on a client that had already logged in. The consumer of the previous session was kept and used to sign the two requests that open the OAuth flow, which have to go out unsigned, so the API rejected them.
 - Fix `Discovergy.VirtualMeters.create_virtual_meter/3` sending a `GET`. Creating a virtual meter is a `POST`; the `GET` route expects a `meterId` and rejected the call. It also returns the new meter, which is now decoded into a `Discovergy.Meter`. `meterIdsMinus` is dropped when no meters are subtracted, as was intended.
 - Fix `Discovergy.Disaggregation.get_energy_by_device_measurements/4` returning measurements in an arbitrary order. They were sorted with `Date`, which only compares year, month and day, so every measurement of a day compared equal.

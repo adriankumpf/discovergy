@@ -26,6 +26,13 @@ defmodule Discovergy.ErrorTest do
     assert Exception.message(error) == "HTTP 502"
   end
 
+  test "describes the reasons the library reports itself" do
+    assert Exception.message(%Discovergy.Error{reason: :not_logged_in}) == "not logged in"
+
+    assert Exception.message(%Discovergy.Error{reason: :consumer_rejected}) ==
+             "the consumer was rejected"
+  end
+
   test "reports a malformed response body", %{client: client} do
     mock(fn %{url: "https://api.inexogy.com/public/v1/meters"} ->
       {:ok, 200, [{"Content-Type", "application/json"}], "{"}
