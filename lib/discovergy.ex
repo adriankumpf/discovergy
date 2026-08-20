@@ -13,9 +13,12 @@ defmodule Discovergy do
   Access tokens expire. Use `Discovergy.Client.reauthorize/3` to get a new one
   rather than logging in again, so the consumer registered by `login/3` is
   reused. Consumer registration is rate limited per IP, so an application that
-  renews its token by logging in again is eventually answered with a `429`. See
-  [Quirks of the API](api-quirks.md) for the rest of what running against it
-  turned up.
+  renews its token by logging in again is eventually answered with a `429`.
+
+  The API also accepts HTTP Basic auth, which `Discovergy.Client.basic_auth/3`
+  sends. It has no token to expire and no rate limit to run into, but it is
+  undocumented. See [Quirks of the API](api-quirks.md) for that and the rest of
+  what running against the API turned up.
 
   Then pass the `client` to the respective endpoint function. For example, to list all meters the user has access to:
 

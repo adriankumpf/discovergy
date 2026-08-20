@@ -6,27 +6,47 @@ running against it. Worth reading before deploying anything long-lived.
 
 ## HTTP Basic auth works, and is not documented anywhere
 
-Every data endpoint accepts plain HTTP Basic auth with the account's email and
+Every endpoint accepts plain HTTP Basic auth with the account's email and
 password:
 
 ```
 curl -u 'demo@inexogy.com:demo' https://api.inexogy.com/public/v1/meters
 ```
 
-Verified against `meters`, `field_names`, `last_reading`, `devices` and
-`statistics`, all returning `200`. Without credentials, or with a wrong
-password, the same request is a `401`.
+Verified against `meters`, `field_names`, `last_reading`, `readings`,
+`statistics`, `devices`, `disaggregation` and `activities`, all returning
+`200`. Without credentials the same request is a `401`, and the challenge it
+comes back with names the scheme:
+
+```
+www-authenticate: Basic realm="Discovergy", charset="UTF-8"
+```
 
 This matters because it sidesteps everything below about tokens: nothing to
 expire, no consumer to register, and neither of the rate limits. The
 [ioBroker adapter](https://github.com/DrozmotiX/ioBroker.discovergy) has used
 it exclusively for years.
 
-This library uses OAuth 1.0a, which the official documentation describes as the
-way in, and exposes no way to send Basic auth instead. Basic auth is
-undocumented, so it carries the risk that anything undocumented does: it could
-be withdrawn without notice. Everything below applies whenever OAuth is used,
-which here is always.
+`Discovergy.Client.basic_auth/3` sends it:
+
+```elixir
+client = Discovergy.Client.new() |> Discovergy.Client.basic_auth(email, password)
+```
+
+Nothing goes out when you call it, so a wrong password first shows up on the
+next request, as a `401` that does say what is wrong:
+
+```
+401 Unauthorized: Invalid email or password supplied in the HTTP Authorization header
+```
+
+That is the whole difference in error handling: an expired OAuth token is an
+empty-bodied `401` to be recovered from, while a `401` here is a credential
+that will not start working on its own.
+
+Basic auth is undocumented, so it carries the risk that anything undocumented
+does: it could be withdrawn without notice. `Discovergy.Client.login/3` remains
+the documented way in, and everything below applies whenever it is used.
 
 ## A public demo account exists
 
@@ -144,18 +164,21 @@ accounts does not lift them.
 
 Use `Discovergy.Client.reauthorize/3` rather than `Discovergy.Client.login/3` to
 renew a token. It reuses the consumer registered by the first login and never
-calls `consumer_token`. The consumer can also be persisted and handed back to
-`Discovergy.Client.new/1` so it survives a restart:
+calls `consumer_token`. The session can also be persisted and handed back to
+`Discovergy.Client.new/1` so it survives a restart, spending neither call:
 
 ```elixir
 {:ok, client} = Discovergy.Client.new() |> Discovergy.Client.login(email, password)
 
-# persist client.consumer and client.token, then later:
-client = Discovergy.Client.new(consumer: consumer, token: token)
+# persist Discovergy.Client.credentials(client), then later:
+client = Discovergy.Client.new(credentials: credentials)
 ```
 
 A persisted consumer expires like any other, so be ready for the
 `:consumer_rejected` above and register a new one.
+
+Basic auth is subject to neither limit, which is the other reason to reach for
+it.
 
 `authorize` is limited more tightly than `consumer_token`. Two calls in quick
 succession from one address are enough to trigger it.
