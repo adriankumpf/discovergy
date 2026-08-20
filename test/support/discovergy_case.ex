@@ -1,10 +1,13 @@
 defmodule Discovergy.Case do
   use ExUnit.CaseTemplate
 
+  alias Discovergy.OAuth
   alias Discovergy.OAuth.{Consumer, Token}
 
-  @consumer %Consumer{attributes: %{}, key: "$key", owner: "$client_id", secret: "$secret"}
-  @token %Token{oauth_token: "$access_token", oauth_token_secret: "$access_token_secret"}
+  @oauth %OAuth{
+    consumer: %Consumer{attributes: %{}, key: "$key", owner: "$client_id", secret: "$secret"},
+    token: %Token{oauth_token: "$access_token", oauth_token_secret: "$access_token_secret"}
+  }
 
   using do
     quote do
@@ -15,7 +18,7 @@ defmodule Discovergy.Case do
   # Tag a test or a test module with `:logged_in` to get a client that signs
   # its requests.
   setup tags do
-    credentials = if tags[:logged_in], do: [consumer: @consumer, token: @token], else: []
+    credentials = if tags[:logged_in], do: [credentials: @oauth], else: []
 
     {:ok, client: Discovergy.Client.new([http_client: TestClient] ++ credentials)}
   end
@@ -40,6 +43,10 @@ defmodule Discovergy.Case do
     end)
 
     :ok
+  end
+
+  def authorization(headers) do
+    with {_name, value} <- List.keyfind(headers, "authorization", 0), do: value
   end
 
   def json(data) do

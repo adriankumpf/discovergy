@@ -37,6 +37,13 @@ iex> {:ok, client} = Discovergy.Client.reauthorize(client, email, password)
 
 The API rate limits consumer registrations, so an application that renews its token by logging in again is eventually turned away with a `429`.
 
+The API also accepts plain HTTP Basic auth, which `Discovergy.Client.basic_auth/3` sends. It skips the token lifecycle and the rate limits entirely, at the price of being undocumented:
+
+```elixir
+iex> client = Discovergy.Client.new() |> Discovergy.Client.basic_auth(email, password)
+#Discovergy.Client<base_url: "https://api.inexogy.com/public/v1", ...>
+```
+
 Then pass the `client` to the respective endpoint function. For example, to list all meters the user has access to:
 
 ```elixir
@@ -92,7 +99,7 @@ iex> Discovergy.Measurements.get_last_reading(client, "c1972a89ce3a4d58aadcb7908
 
 ## Quirks of the API
 
-The API behaves in ways its [official documentation](https://api.inexogy.com/docs/) does not cover: access tokens expire and come back as a `401` with an empty body, consumer registration and authorization are rate limited per IP, upstream errors arrive as HTML, and `/meters` returns fields that are documented nowhere. Plain HTTP Basic auth also works on every data endpoint, undocumented, which avoids the token lifecycle entirely.
+The API behaves in ways its [official documentation](https://api.inexogy.com/docs/) does not cover: access tokens expire and come back as a `401` with an empty body, consumer registration and authorization are rate limited per IP, upstream errors arrive as HTML, and `/meters` returns fields that are documented nowhere. The Basic auth above is undocumented too.
 
 [Quirks of the API](guides/api-quirks.md) collects what running against it turned up.
 

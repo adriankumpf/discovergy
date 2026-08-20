@@ -40,43 +40,69 @@ defmodule Discovergy.OAuth do
     def into(attrs), do: Model.cast(__MODULE__, attrs)
   end
 
+  @type t() :: %__MODULE__{consumer: Consumer.t(), token: Token.t() | nil}
+
+  @enforce_keys [:consumer]
+  defstruct [:consumer, :token]
+
   @doc """
   Runs the four steps of the [OAuth 1.0 flow](https://tools.ietf.org/html/rfc5849):
   register the client application, obtain a request token, authorize it with
   the user's credentials and exchange it for an access token.
   """
-  @spec login(Client.t(), String.t(), String.t()) ::
-          {:ok, {Consumer.t(), Token.t()}} | {:error, Error.t()}
+  @spec login(Client.t(), String.t(), String.t()) :: {:ok, t()} | {:error, Error.t()}
   def login(%Client{} = client, email, password) do
-    with {:ok, consumer} <- register_consumer(client),
-         {:ok, access_token} <- reauthorize(client, consumer, email, password) do
-      {:ok, {consumer, access_token}}
+    with {:ok, consumer} <- register_consumer(client) do
+      reauthorize(client, consumer, email, password)
     end
   end
 
   @doc """
-  Steps 2 to 4, for a consumer that is already registered.
+  Steps 2 to 4, for a consumer that is already registered. Taking the consumer
+  rather than the whole session is the point of the function: it is all that is
+  reused.
   """
   @spec reauthorize(Client.t(), Consumer.t(), String.t(), String.t()) ::
-          {:ok, Token.t()} | {:error, Error.t()}
+          {:ok, t()} | {:error, Error.t()}
   def reauthorize(%Client{} = client, %Consumer{} = consumer, email, password) do
     with {:ok, request_token} <- get_request_token(client, consumer),
-         {:ok, verifier} <- authorize(client, request_token, email, password) do
-      get_access_token(client, consumer, request_token, verifier)
+         {:ok, verifier} <- authorize(client, request_token, email, password),
+         {:ok, token} <- get_access_token(client, consumer, request_token, verifier) do
+      {:ok, %__MODULE__{consumer: consumer, token: token}}
     end
   end
 
+  @spec authorization(t(), atom(), String.t(), keyword()) :: {String.t(), String.t()}
+  def authorization(%__MODULE__{consumer: consumer, token: token}, method, url, body) do
+    credentials =
+      OAuther.credentials(
+        consumer_key: consumer.key,
+        consumer_secret: consumer.secret,
+        token: token && token.oauth_token,
+        token_secret: token && token.oauth_token_secret
+      )
+
+    # OAuther names the header "Authorization"; the rest of the request uses
+    # lowercase names, and HTTP does not care which.
+    {{_name, value}, _req_params} =
+      method |> to_string() |> OAuther.sign(url, body, credentials) |> OAuther.header()
+
+    {"authorization", value}
+  end
+
   defp register_consumer(client) do
-    opts = [consumer: nil, token: nil]
+    body = [{"client", @client_id}]
 
     with {:ok, consumer} <-
-           Client.post(client, "/oauth1/consumer_token", [{"client", @client_id}], opts) do
+           Client.post(client, "/oauth1/consumer_token", body, credentials: nil) do
       {:ok, Consumer.into(consumer)}
     end
   end
 
   defp get_request_token(client, consumer) do
-    case Client.post(client, "/oauth1/request_token", [], consumer: consumer, token: nil) do
+    credentials = %__MODULE__{consumer: consumer}
+
+    case Client.post(client, "/oauth1/request_token", [], credentials: credentials) do
       {:ok, body} ->
         {:ok, Token.into(URI.decode_query(body))}
 
@@ -93,9 +119,8 @@ defmodule Discovergy.OAuth do
 
   defp authorize(client, request_token, email, password) do
     query = [email: email, password: password, oauth_token: request_token.oauth_token]
-    opts = [query: query, consumer: nil, token: nil]
 
-    with {:ok, body} <- Client.get(client, "/oauth1/authorize", opts) do
+    with {:ok, body} <- Client.get(client, "/oauth1/authorize", query: query, credentials: nil) do
       %{"oauth_verifier" => verifier} = URI.decode_query(body)
       {:ok, verifier}
     end
@@ -103,9 +128,10 @@ defmodule Discovergy.OAuth do
 
   defp get_access_token(client, consumer, request_token, verifier) do
     body = [{"oauth_verifier", verifier}]
-    opts = [consumer: consumer, token: request_token]
+    credentials = %__MODULE__{consumer: consumer, token: request_token}
 
-    with {:ok, response_body} <- Client.post(client, "/oauth1/access_token", body, opts) do
+    with {:ok, response_body} <-
+           Client.post(client, "/oauth1/access_token", body, credentials: credentials) do
       {:ok, Token.into(URI.decode_query(response_body))}
     end
   end

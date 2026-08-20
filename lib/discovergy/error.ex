@@ -10,7 +10,8 @@ defmodule Discovergy.Error do
   Two reasons come from this library rather than from the API:
 
   - `:not_logged_in` - `Discovergy.Client.reauthorize/3` was called on a client
-    that has no consumer, so there is nothing to reuse.
+    with no OAuth session to renew: it never logged in, or it authenticates
+    with `Discovergy.Client.basic_auth/3`, which has nothing that expires.
   - `:consumer_rejected` - the API no longer accepts the consumer of the client
     being reauthorized. Register a new one with `Discovergy.Client.login/3`.
   """

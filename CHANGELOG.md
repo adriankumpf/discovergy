@@ -19,6 +19,14 @@
 - Raise on an option the endpoint does not have. A misspelled `:resolution` or `:fields` used to be dropped silently, and the request went out without it.
 - `Discovergy.WebsiteAccessCode.generate/2` returns the access code as the API sends it. It used to be decoded as a query string, and the first key of the resulting map was returned as the code.
 - An unsuccessful response with an empty body is reported as `{:http_error, status}` instead of `:unknown`, which rendered as `":unknown"`.
+- Replace the `:consumer` and `:token` fields of `Discovergy.Client` with a single `:credentials` field, read with `Discovergy.Client.credentials/1` and restored through the `:credentials` option of `Discovergy.Client.new/1`. A client authenticates one way or the other, and holding the pieces of an OAuth session in loose fields left no room for anything else. The struct is opaque, so the accessor also gets persistence out of the business of reaching into it.
+
+  ```diff
+  - # persist client.consumer and client.token, then later:
+  - client = Discovergy.Client.new(consumer: consumer, token: token)
+  + # persist Discovergy.Client.credentials(client), then later:
+  + client = Discovergy.Client.new(credentials: credentials)
+  ```
 
 ### Bug Fixes
 
@@ -32,11 +40,12 @@
 
 ### Security
 
-- Redact the OAuth secrets from `Discovergy.Client`, `Discovergy.OAuth.Consumer` and `Discovergy.OAuth.Token` when they are inspected, so a Logger metadata field or a crash report no longer prints the credentials of the session.
+- Redact the credentials of the session from `Discovergy.Client` and the structs it holds when they are inspected, so a Logger metadata field or a crash report no longer prints the OAuth secrets or the Basic auth password.
 
 ### Changes
 
-- Document the quirks of the API: that HTTP Basic auth works and avoids the token lifecycle entirely, token expiry, the rate limits on consumer registration and authorization, the shape its errors arrive in, and the undocumented meter fields.
+- Add `Discovergy.Client.basic_auth/3`, which authenticates with HTTP Basic auth instead of OAuth. Every endpoint accepts the account's email and password directly, so there is no token to expire, no consumer to register and neither of the rate limits `login/3` runs into, and no request is spent signing in. The API documents none of it, which is why this is an alternative to `login/3` rather than a replacement.
+- Document the quirks of the API: token expiry, the rate limits on consumer registration and authorization, the shape its errors arrive in, and the undocumented meter fields.
 - Add `Discovergy.Client.reauthorize/3`, which obtains a new access token while reusing the consumer registered by `login/3`. The API rate limits `consumer_token` requests and asks clients to reuse tokens, so an application that refreshed by calling `login/3` again would eventually be answered with a `429`.
 - Add the `kwh_scaling_factor`, `printed_full_serial_number`, `storage_numbers` and `submeter` fields to `Discovergy.Meter`. The API returns them but they were silently dropped.
 - Fix the `Discovergy.Measurement` typespec: `values` is a map, not a list of maps.
