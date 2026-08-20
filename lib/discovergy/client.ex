@@ -73,15 +73,12 @@ defmodule Discovergy.Client do
   @doc """
   Returns the credentials of the session, or `nil` if the client has none.
 
-  Worth persisting for an OAuth session, which `new/1` takes back to skip the
-  two rate limited calls `login/3` would spend after a restart. Serialize it
-  with `:erlang.term_to_binary/1`, since the structs redact themselves when
-  inspected and encode to no other format, and be ready for a blob written by
-  an older version of this library not to load.
+  Worth keeping for an OAuth session: handing it back to `new/1` after a
+  restart skips the two rate limited calls `login/3` would spend.
 
-  A Basic auth session is worth nothing persisted: `basic_auth/3` rebuilds it
-  from the same email and password, and storing it writes the account's
-  password somewhere new.
+  A Basic auth session is not worth keeping. `basic_auth/3` rebuilds it from
+  the same email and password, and storing it puts the account's password
+  somewhere new.
 
   ## Examples
 
